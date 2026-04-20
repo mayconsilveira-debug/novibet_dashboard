@@ -24,34 +24,61 @@ class DashboardCharts {
     const ctx = document.getElementById(canvasId);
     if (!ctx) return;
     
-    // Default data if none provided
-    const chartData = data || this.generateSampleData();
+    // Default 6 months data if none provided
+    const chartData = data || this.generateSixMonthData();
     
     this.mainChart = new Chart(ctx, {
       type: 'line',
       data: {
         labels: chartData.labels,
-        datasets: [{
-          label: 'Performance',
-          data: chartData.values,
-          borderColor: this.colors.primary,
-          backgroundColor: this.colors.primaryLight,
-          borderWidth: 2,
-          fill: true,
-          tension: 0.4,
-          pointRadius: 4,
-          pointBackgroundColor: this.colors.primary,
-          pointBorderColor: '#fff',
-          pointBorderWidth: 2,
-          pointHoverRadius: 6
-        }]
+        datasets: [
+          {
+            label: 'Impressions',
+            data: chartData.impressions,
+            borderColor: '#2563EB',
+            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 4,
+            pointBackgroundColor: '#2563EB',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointHoverRadius: 6
+          },
+          {
+            label: 'Clicks',
+            data: chartData.clicks,
+            borderColor: '#7C6FF7',
+            backgroundColor: 'rgba(124, 111, 247, 0.1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 4,
+            pointBackgroundColor: '#7C6FF7',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointHoverRadius: 6
+          }
+        ]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
           legend: {
-            display: false
+            display: true,
+            position: 'top',
+            align: 'end',
+            labels: {
+              usePointStyle: true,
+              pointStyle: 'circle',
+              padding: 20,
+              font: {
+                family: 'Plus Jakarta Sans',
+                size: 12
+              }
+            }
           },
           tooltip: {
             backgroundColor: '#1A1D2E',
@@ -113,13 +140,18 @@ class DashboardCharts {
   }
   
   /**
-   * Generate sample data for the chart
+   * Generate 6 months mock data for Impressions and Clicks
    */
-  generateSampleData() {
-    const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-    const values = months.map(() => Math.floor(Math.random() * 5000000) + 1000000);
+  generateSixMonthData() {
+    const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'];
     
-    return { labels: months, values };
+    // Mock data for Impressions (in millions)
+    const impressions = [45.2, 48.5, 52.1, 55.8, 58.3, 60.8].map(v => v * 1000000);
+    
+    // Mock data for Clicks (proportional to impressions)
+    const clicks = [142000, 158000, 172000, 185000, 192000, 195021];
+    
+    return { labels: months, impressions, clicks };
   }
   
   /**
