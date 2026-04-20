@@ -68,12 +68,7 @@ a:hover {
   flex: 1;
   display: flex;
   flex-direction: column;
-  margin-left: var(--sidebar-expanded);
-  transition: margin-left var(--transition-default);
-}
-
-.main-content.sidebar-collapsed {
-  margin-left: var(--sidebar-collapsed);
+  min-width: 0;
 }
 
 .content-area {
@@ -99,10 +94,6 @@ a:hover {
 }
 
 @media (max-width: 768px) {
-  .main-content {
-    margin-left: var(--sidebar-collapsed);
-  }
-  
   .grid-cols-4,
   .grid-cols-3,
   .grid-cols-2 {
