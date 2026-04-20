@@ -60,9 +60,27 @@
   transition: opacity var(--transition-fast);
 }
 
-.sidebar.sidebar-collapsed .sidebar-logo {
-  opacity: 0;
-  width: 0;
+#sidebar.collapsed .sidebar-logo {
+  display: none;
+}
+
+.sidebar-hamburger {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  border-bottom: 1px solid var(--color-border);
+  transition: all var(--transition-fast);
+}
+
+.sidebar-hamburger:hover {
+  background: var(--color-accent-light);
+  color: var(--color-accent);
 }
 
 .sidebar-toggle {

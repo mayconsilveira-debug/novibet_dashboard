@@ -26,6 +26,17 @@
   <div class="app-container">
     <!-- Sidebar -->
     <aside id="sidebar" class="sidebar" role="navigation" aria-label="Main navigation">
+      <!-- Hamburger Toggle -->
+      <button 
+        id="sidebar-toggle"
+        class="sidebar-hamburger" 
+        aria-label="Toggle sidebar" 
+        aria-expanded="true"
+        title="Toggle sidebar"
+      >
+        <i data-lucide="menu" style="width: 20px; height: 20px;"></i>
+      </button>
+      
       <div class="sidebar-header">
         <span class="sidebar-logo">Dashboard</span>
       </div>
@@ -69,17 +80,6 @@
       <!-- TopBar -->
       <header class="topbar" role="banner">
         <div class="topbar-left">
-          <!-- Sidebar Toggle -->
-          <button 
-            id="sidebar-toggle"
-            class="btn btn-ghost btn-icon" 
-            aria-label="Toggle sidebar" 
-            aria-expanded="true"
-            title="Toggle sidebar"
-          >
-            <i data-lucide="menu" style="width: 20px; height: 20px;"></i>
-          </button>
-          
           <span class="topbar-brand" style="font-weight: 700; color: var(--color-text-primary);">Novibet Dashboard</span>
         </div>
         
