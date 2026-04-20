@@ -28,15 +28,6 @@
     <aside id="sidebar" class="sidebar" role="navigation" aria-label="Main navigation">
       <div class="sidebar-header">
         <span class="sidebar-logo">Dashboard</span>
-        <button 
-          id="sidebar-toggle"
-          class="sidebar-toggle" 
-          aria-label="Toggle sidebar" 
-          aria-expanded="true"
-          title="Toggle sidebar"
-        >
-          <i data-lucide="menu" class="nav-icon"></i>
-        </button>
       </div>
       
       <nav class="sidebar-nav">
@@ -65,6 +56,12 @@
           </a>
         </div>
       </nav>
+      
+      <!-- Language Toggle at bottom -->
+      <div class="sidebar-footer">
+        <button onclick="setLang('pt')" id="btn-pt" class="lang-btn active" data-pt="🇧🇷 Português" data-en="🇧🇷 PT" data-flag="🇧🇷">🇧🇷 Português</button>
+        <button onclick="setLang('en')" id="btn-en" class="lang-btn" data-pt="🇬🇧 Inglês" data-en="🇬🇧 EN" data-flag="🇬🇧">🇬🇧 Inglês</button>
+      </div>
     </aside>
     
     <!-- Main Content -->
@@ -76,11 +73,16 @@
         </div>
         
         <div class="topbar-right">
-          <!-- Language Toggle -->
-          <div class="lang-toggle" style="display: flex; gap: var(--space-2);">
-            <button onclick="setLang('pt')" id="btn-pt" class="btn btn-sm btn-primary">🇧🇷 PT</button>
-            <button onclick="setLang('en')" id="btn-en" class="btn btn-sm btn-secondary">🇬🇧 EN</button>
-          </div>
+          <!-- Sidebar Toggle -->
+          <button 
+            id="sidebar-toggle"
+            class="btn btn-ghost btn-icon" 
+            aria-label="Toggle sidebar" 
+            aria-expanded="true"
+            title="Toggle sidebar"
+          >
+            <i data-lucide="menu" style="width: 20px; height: 20px;"></i>
+          </button>
           
           <div class="search-box">
             <i data-lucide="search" class="search-icon" style="width: 16px; height: 16px;"></i>
