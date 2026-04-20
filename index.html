@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Modern SaaS Dashboard - Pure HTML, CSS, and JavaScript">
+  <title>Dashboard | Vanilla SaaS</title>
+  
+  <!-- Google Fonts - Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar" role="navigation" aria-label="Main navigation">
+      <div class="sidebar-header">
+        <span class="sidebar-logo">Dashboard</span>
+        <button 
+          class="sidebar-toggle" 
+          aria-label="Toggle sidebar" 
+          aria-expanded="true"
+          title="Toggle sidebar"
+        >
+          <i data-lucide="menu" class="nav-icon"></i>
+        </button>
+      </div>
+      
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <span class="nav-label">Menu</span>
+          
+          <a href="#" class="nav-item active" aria-current="page">
+            <i data-lucide="layout-dashboard" class="nav-icon"></i>
+            <span class="nav-text">Dashboard</span>
+          </a>
+          
+          <a href="#" class="nav-item">
+            <i data-lucide="bar-chart-3" class="nav-icon"></i>
+            <span class="nav-text">Analytics</span>
+          </a>
+          
+          <a href="#" class="nav-item">
+            <i data-lucide="users" class="nav-icon"></i>
+            <span class="nav-text">Customers</span>
+          </a>
+        </div>
+        
+        <div class="nav-divider" role="separator"></div>
+        
+        <div class="nav-section">
+          <span class="nav-label">Settings</span>
+          
+          <a href="#" class="nav-item" data-modal-open="settings-modal">
+            <i data-lucide="settings" class="nav-icon"></i>
+            <span class="nav-text">Settings</span>
+          </a>
+          
+          <a href="#" class="nav-item">
+            <i data-lucide="help-circle" class="nav-icon"></i>
+            <span class="nav-text">Help</span>
+          </a>
+        </div>
+      </nav>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- TopBar -->
+      <header class="topbar" role="banner">
+        <div class="topbar-left">
+          <h1 class="topbar-title">Overview</h1>
+        </div>
+        
+        <div class="topbar-right">
+          <div class="search-box">
+            <i data-lucide="search" class="search-icon" style="width: 16px; height: 16px;"></i>
+            <input 
+              type="search" 
+              class="input search-input" 
+              placeholder="Search..."
+              aria-label="Search"
+            >
+          </div>
+          
+          <button class="btn btn-ghost btn-icon" aria-label="Notifications">
+            <i data-lucide="bell" style="width: 20px; height: 20px;"></i>
+          </button>
+          
+          <div class="avatar avatar-lg" title="User Avatar">
+            JD
+          </div>
+        </div>
+      </header>
+      
+      <!-- Dashboard Content -->
+      <div class="content-area">
+        <!-- Stat Cards -->
+        <div class="grid grid-cols-4 mb-4" style="margin-bottom: var(--space-6);">
+          <div class="stat-card" role="button" tabindex="0" aria-label="Impressions: 60.8 Million, up 12%">
+            <div class="stat-label">Impressions</div>
+            <div class="stat-value">60.8M</div>
+            <div class="stat-change positive">
+              <i data-lucide="trending-up" style="width: 12px; height: 12px;"></i>
+              +12%
+            </div>
+          </div>
+          
+          <div class="stat-card" role="button" tabindex="0" aria-label="Clicks: 195.021, up 8%">
+            <div class="stat-label">Clicks</div>
+            <div class="stat-value">195.021</div>
+            <div class="stat-change positive">
+              <i data-lucide="trending-up" style="width: 12px; height: 12px;"></i>
+              +8%
+            </div>
+          </div>
+          
+          <div class="stat-card" role="button" tabindex="0" aria-label="CTR: 0.32%, down 2%">
+            <div class="stat-label">CTR</div>
+            <div class="stat-value">0.32%</div>
+            <div class="stat-change negative">
+              <i data-lucide="trending-down" style="width: 12px; height: 12px;"></i>
+              -2%
+            </div>
+          </div>
+          
+          <div class="stat-card" role="button" tabindex="0" aria-label="Complete Views: 12.0 Million, up 15%">
+            <div class="stat-label">Complete Views</div>
+            <div class="stat-value">12.0M</div>
+            <div class="stat-change positive">
+              <i data-lucide="trending-up" style="width: 12px; height: 12px;"></i>
+              +15%
+            </div>
+          </div>
+        </div>
+        
+        <!-- Chart Section -->
+        <div class="chart-container" style="margin-bottom: var(--space-6);">
+          <div class="chart-header">
+            <h2 class="chart-title">Performance ao longo do tempo</h2>
+            <div style="display: flex; gap: var(--space-2);">
+              <button class="btn btn-sm btn-secondary">Ano</button>
+              <button class="btn btn-sm btn-primary">Mês</button>
+              <button class="btn btn-sm btn-secondary">Semana</button>
+            </div>
+          </div>
+          <div style="height: 300px;">
+            <canvas id="mainChart" aria-label="Performance chart"></canvas>
+          </div>
+        </div>
+        
+        <!-- Table Section -->
+        <div class="card">
+          <div class="card-header" style="display: flex; align-items: center; justify-content: space-between;">
+            <h3 class="card-title">Campanhas</h3>
+            <div class="search-box" style="width: 240px;">
+              <i data-lucide="search" class="search-icon" style="width: 16px; height: 16px;"></i>
+              <input 
+                type="search" 
+                id="table-search"
+                class="input search-input" 
+                placeholder="Buscar campanha..."
+                style="width: 100%;"
+                aria-label="Search campaigns"
+              >
+            </div>
+          </div>
+          
+          <div class="card-body" style="padding: 0;">
+            <div class="table-container" style="border-radius: 0; box-shadow: none;">
+              <table class="table" role="table" aria-label="Campaign data">
+                <thead>
+                  <tr>
+                    <th data-sort="name" scope="col">
+                      Campanha <span class="table-sort-icon"></span>
+                    </th>
+                    <th data-sort="investimento" scope="col">
+                      Investimento <span class="table-sort-icon"></span>
+                    </th>
+                    <th data-sort="impressions" scope="col">
+                      Impressions <span class="table-sort-icon"></span>
+                    </th>
+                    <th data-sort="clicks" scope="col">
+                      Clicks <span class="table-sort-icon"></span>
+                    </th>
+                    <th data-sort="ctr" scope="col">
+                      CTR <span class="table-sort-icon"></span>
+                    </th>
+                    <th data-sort="views" scope="col">
+                      Views <span class="table-sort-icon"></span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- Populated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Demo Components -->
+        <div class="grid grid-cols-3" style="margin-top: var(--space-6);">
+          <!-- Modal Demo -->
+          <div class="card">
+            <div class="card-body">
+              <h4 class="mb-2" style="margin-bottom: var(--space-2);">Modal Component</h4>
+              <button class="btn btn-primary" data-modal-open="demo-modal">
+                <i data-lucide="maximize-2" style="width: 16px; height: 16px;"></i>
+                Open Modal
+              </button>
+            </div>
+          </div>
+          
+          <!-- Toast Demo -->
+          <div class="card">
+            <div class="card-body">
+              <h4 class="mb-2" style="margin-bottom: var(--space-2);">Toast Component</h4>
+              <button class="btn btn-secondary" id="toast-demo">
+                <i data-lucide="bell" style="width: 16px; height: 16px;"></i>
+                Show Toast
+              </button>
+            </div>
+          </div>
+          
+          <!-- Skeleton Demo -->
+          <div class="card">
+            <div class="card-body">
+              <h4 class="mb-2" style="margin-bottom: var(--space-2);">Skeleton Loader</h4>
+              <div class="skeleton" style="width: 100%; height: 60px; border-radius: var(--radius-md);"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  
+  <!-- Toast Container -->
+  <div class="toast-container" aria-live="polite" aria-atomic="true"></div>
+  
+  <!-- Demo Modal -->
+  <div class="modal-backdrop" id="demo-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modal-title" class="modal-title">Modal Example</h3>
+      </div>
+      <div class="modal-body">
+        <p style="color: var(--color-text-secondary);">
+          This is a modal dialog built with pure HTML, CSS, and vanilla JavaScript. 
+          It features smooth animations, backdrop blur, and full keyboard accessibility.
+        </p>
+        
+        <div class="input-group" style="margin-top: var(--space-4);">
+          <label class="input-label" for="demo-input">Sample Input</label>
+          <input type="text" id="demo-input" class="input" placeholder="Type something...">
+          <span class="input-helper">This is helper text</span>
+        </div>
+        
+        <div class="input-group" style="margin-top: var(--space-4);">
+          <label class="input-label" for="demo-select">Sample Select</label>
+          <select id="demo-select" class="input select">
+            <option value="">Select an option</option>
+            <option value="1">Option 1</option>
+            <option value="2">Option 2</option>
+            <option value="3">Option 3</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-modal-close>Cancel</button>
+        <button class="btn btn-primary" data-modal-close>Confirm</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Settings Modal -->
+  <div class="modal-backdrop" id="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="settings-title" class="modal-title">Settings</h3>
+      </div>
+      <div class="modal-body">
+        <p style="color: var(--color-text-secondary);">
+          Configure your dashboard preferences here.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-modal-close>Close</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Scripts -->
+  <script src="js/sidebar.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/main.js"></script>
+  
+  <!-- Initialize Lucide Icons -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,125 @@
+/**
+ * Design Tokens - CSS Custom Properties
+ * Modern SaaS Dashboard Design System
+ */
+
+:root {
+  /* ============================================
+     COLOR PALETTE
+     ============================================ */
+  
+  /* Base Colors */
+  --color-bg: #F8F9FB;
+  --color-surface: #FFFFFF;
+  --color-surface-elevated: #FFFFFF;
+  
+  /* Text Colors */
+  --color-text-primary: #1A1D2E;
+  --color-text-secondary: #6B7280;
+  --color-text-tertiary: #9CA3AF;
+  --color-text-muted: #9CA3AF;
+  
+  /* Accent Colors - Soft Violet */
+  --color-accent: #7C6FF7;
+  --color-accent-light: #E8E6FF;
+  --color-accent-dark: #6355E5;
+  
+  /* Semantic Colors */
+  --color-success: #10B981;
+  --color-success-light: #D1FAE5;
+  --color-warning: #F59E0B;
+  --color-warning-light: #FEF3C7;
+  --color-danger: #EF4444;
+  --color-danger-light: #FEE2E2;
+  --color-info: #3B82F6;
+  --color-info-light: #DBEAFE;
+  
+  /* Border & Divider */
+  --color-border: #E5E7EB;
+  --color-border-light: #F3F4F6;
+  
+  /* ============================================
+     BORDER RADIUS
+     ============================================ */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-full: 9999px;
+  
+  /* ============================================
+     SPACING (4px base unit)
+     ============================================ */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  
+  /* ============================================
+     TYPOGRAPHY
+     ============================================ */
+  --font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  
+  /* Font Sizes */
+  --text-display: 32px;
+  --text-heading: 24px;
+  --text-subheading: 18px;
+  --text-body: 14px;
+  --text-body-lg: 16px;
+  --text-caption: 12px;
+  --text-label: 11px;
+  
+  /* Font Weights */
+  --font-regular: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  
+  /* Line Heights */
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+  
+  /* ============================================
+     SHADOWS (soft & diffuse)
+     ============================================ */
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.03);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.05), 0 1px 2px -1px rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.05), 0 8px 10px -6px rgb(0 0 0 / 0.05);
+  --shadow-card: 0 2px 8px 0 rgb(0 0 0 / 0.04);
+  --shadow-card-hover: 0 8px 16px 0 rgb(0 0 0 / 0.08);
+  
+  /* ============================================
+     TRANSITIONS
+     ============================================ */
+  --transition-fast: 150ms ease;
+  --transition-default: 200ms ease;
+  --transition-slow: 300ms ease;
+  
+  /* ============================================
+     LAYOUT
+     ============================================ */
+  --sidebar-collapsed: 56px;
+  --sidebar-expanded: 220px;
+  --topbar-height: 64px;
+  
+  /* ============================================
+     Z-INDEX
+     ============================================ */
+  --z-base: 0;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-fixed: 300;
+  --z-modal-backdrop: 400;
+  --z-modal: 500;
+  --z-toast: 600;
+  --z-tooltip: 700;
+}
