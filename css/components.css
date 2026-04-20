@@ -302,6 +302,44 @@
   }
 }
 
+/* Date Range Filter */
+.date-range {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.date-label {
+  font-size: var(--text-body);
+  font-weight: var(--font-medium);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.date-input {
+  width: 140px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  font-family: var(--font-family);
+  font-size: var(--text-body);
+  color: var(--color-text-primary);
+  transition: all var(--transition-fast);
+}
+
+.date-input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-light);
+}
+
+@media (max-width: 768px) {
+  .date-input {
+    width: 120px;
+  }
+}
+
 /* ============================================
    BUTTONS
    ============================================ */
