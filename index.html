@@ -25,10 +25,11 @@
 <body>
   <div class="app-container">
     <!-- Sidebar -->
-    <aside class="sidebar" role="navigation" aria-label="Main navigation">
+    <aside id="sidebar" class="sidebar" role="navigation" aria-label="Main navigation">
       <div class="sidebar-header">
         <span class="sidebar-logo">Dashboard</span>
         <button 
+          id="sidebar-toggle"
           class="sidebar-toggle" 
           aria-label="Toggle sidebar" 
           aria-expanded="true"
@@ -40,27 +41,27 @@
       
       <nav class="sidebar-nav">
         <div class="nav-section">
-          <span class="nav-label" data-lang="nav-reports">Relatórios</span>
+          <span class="nav-label" data-pt="Relatórios" data-en="Reports">Relatórios</span>
           
           <a href="#" class="nav-item active" aria-current="page">
             <i data-lucide="layout-dashboard" class="nav-icon"></i>
-            <span class="nav-text" data-lang="nav-overview">Overview</span>
+            <span class="nav-text" data-pt="Overview" data-en="Overview">Overview</span>
           </a>
         </div>
         
         <div class="nav-divider" role="separator"></div>
         
         <div class="nav-section">
-          <span class="nav-label" data-lang="nav-pacing">Pacing</span>
+          <span class="nav-label" data-pt="Pacing" data-en="Pacing">Pacing</span>
           
           <a href="#" class="nav-item">
             <i data-lucide="calendar" class="nav-icon"></i>
-            <span class="nav-text" data-lang="nav-pacing-2025">Pacing 2025</span>
+            <span class="nav-text" data-pt="Pacing 2025" data-en="Pacing 2025">Pacing 2025</span>
           </a>
           
           <a href="#" class="nav-item">
             <i data-lucide="calendar" class="nav-icon"></i>
-            <span class="nav-text" data-lang="nav-pacing-2026">Pacing 2026</span>
+            <span class="nav-text" data-pt="Pacing 2026" data-en="Pacing 2026">Pacing 2026</span>
           </a>
         </div>
       </nav>
@@ -77,12 +78,8 @@
         <div class="topbar-right">
           <!-- Language Toggle -->
           <div class="lang-toggle" style="display: flex; gap: var(--space-2);">
-            <button class="btn btn-sm btn-secondary lang-btn active" data-lang-switch="pt-BR" title="Português">
-              🇧🇷 PT-BR
-            </button>
-            <button class="btn btn-sm btn-secondary lang-btn" data-lang-switch="en" title="English">
-              🇬🇧 EN
-            </button>
+            <button onclick="setLang('pt')" id="btn-pt" class="btn btn-sm btn-primary">🇧🇷 PT</button>
+            <button onclick="setLang('en')" id="btn-en" class="btn btn-sm btn-secondary">🇬🇧 EN</button>
           </div>
           
           <div class="search-box">
@@ -91,7 +88,8 @@
               type="search" 
               class="input search-input" 
               placeholder="Buscar..."
-              data-lang-placeholder="search-placeholder"
+              data-pt="Buscar..."
+              data-en="Search..."
               aria-label="Search"
             >
           </div>
@@ -111,7 +109,7 @@
         <!-- Stat Cards -->
         <div class="grid grid-cols-4 mb-4" style="margin-bottom: var(--space-6);">
           <div class="stat-card" role="button" tabindex="0" aria-label="Impressions: 60.8 Million, up 12%" data-metric="impressions">
-            <div class="stat-label" data-lang="stat-impressions">Impressions</div>
+            <div class="stat-label" data-pt="Impressões" data-en="Impressions">Impressões</div>
             <div class="stat-value">60.8M</div>
             <div class="stat-change positive">
               <i data-lucide="trending-up" style="width: 12px; height: 12px;"></i>
@@ -120,7 +118,7 @@
           </div>
           
           <div class="stat-card" role="button" tabindex="0" aria-label="Clicks: 195.021, up 8%" data-metric="clicks">
-            <div class="stat-label" data-lang="stat-clicks">Clicks</div>
+            <div class="stat-label" data-pt="Cliques" data-en="Clicks">Cliques</div>
             <div class="stat-value">195.021</div>
             <div class="stat-change positive">
               <i data-lucide="trending-up" style="width: 12px; height: 12px;"></i>
@@ -129,7 +127,7 @@
           </div>
           
           <div class="stat-card" role="button" tabindex="0" aria-label="CTR: 0.32%, down 2%" data-metric="ctr">
-            <div class="stat-label" data-lang="stat-ctr">CTR</div>
+            <div class="stat-label" data-pt="CTR" data-en="CTR">CTR</div>
             <div class="stat-value">0.32%</div>
             <div class="stat-change negative">
               <i data-lucide="trending-down" style="width: 12px; height: 12px;"></i>
@@ -138,7 +136,7 @@
           </div>
           
           <div class="stat-card" role="button" tabindex="0" aria-label="Complete Views: 12.0 Million, up 15%" data-metric="views">
-            <div class="stat-label" data-lang="stat-views">Complete Views</div>
+            <div class="stat-label" data-pt="Visualizações Completas" data-en="Complete Views">Visualizações Completas</div>
             <div class="stat-value">12.0M</div>
             <div class="stat-change positive">
               <i data-lucide="trending-up" style="width: 12px; height: 12px;"></i>
@@ -150,11 +148,11 @@
         <!-- Chart Section -->
         <div class="chart-container" style="margin-bottom: var(--space-6);">
           <div class="chart-header">
-            <h2 class="chart-title" data-lang="chart-title">Performance ao longo do tempo</h2>
+            <h2 class="chart-title" data-pt="Performance ao longo do tempo" data-en="Performance over time">Performance ao longo do tempo</h2>
             <div style="display: flex; gap: var(--space-2);">
-              <button class="btn btn-sm btn-secondary" data-lang="btn-year">Ano</button>
-              <button class="btn btn-sm btn-primary" data-lang="btn-month">Mês</button>
-              <button class="btn btn-sm btn-secondary" data-lang="btn-week">Semana</button>
+              <button class="btn btn-sm btn-secondary" data-pt="Ano" data-en="Year">Ano</button>
+              <button class="btn btn-sm btn-primary" data-pt="Mês" data-en="Month">Mês</button>
+              <button class="btn btn-sm btn-secondary" data-pt="Semana" data-en="Week">Semana</button>
             </div>
           </div>
           <div style="height: 300px;">
@@ -165,7 +163,7 @@
         <!-- Table Section -->
         <div class="card">
           <div class="card-header" style="display: flex; align-items: center; justify-content: space-between;">
-            <h3 class="card-title" data-lang="table-title">Campanhas</h3>
+            <h3 class="card-title" data-pt="Campanhas" data-en="Campaigns">Campanhas</h3>
             <div class="search-box" style="width: 240px;">
               <i data-lucide="search" class="search-icon" style="width: 16px; height: 16px;"></i>
               <input 
@@ -173,7 +171,8 @@
                 id="table-search"
                 class="input search-input" 
                 placeholder="Buscar campanha..."
-                data-lang-placeholder="table-search-placeholder"
+                data-pt="Buscar campanha..."
+                data-en="Search campaign..."
                 style="width: 100%;"
                 aria-label="Search campaigns"
               >
@@ -186,22 +185,22 @@
                 <thead>
                   <tr>
                     <th data-sort="name" scope="col">
-                      <span data-lang="col-campaign">Campanha</span> <span class="table-sort-icon"></span>
+                      <span data-pt="Campanha" data-en="Campaign">Campanha</span> <span class="table-sort-icon"></span>
                     </th>
                     <th data-sort="investimento" scope="col">
-                      <span data-lang="col-investment">Investimento</span> <span class="table-sort-icon"></span>
+                      <span data-pt="Investimento" data-en="Investment">Investimento</span> <span class="table-sort-icon"></span>
                     </th>
                     <th data-sort="impressions" scope="col">
-                      <span data-lang="col-impressions">Impressions</span> <span class="table-sort-icon"></span>
+                      <span data-pt="Impressões" data-en="Impressions">Impressões</span> <span class="table-sort-icon"></span>
                     </th>
                     <th data-sort="clicks" scope="col">
-                      <span data-lang="col-clicks">Clicks</span> <span class="table-sort-icon"></span>
+                      <span data-pt="Cliques" data-en="Clicks">Cliques</span> <span class="table-sort-icon"></span>
                     </th>
                     <th data-sort="ctr" scope="col">
-                      <span data-lang="col-ctr">CTR</span> <span class="table-sort-icon"></span>
+                      <span data-pt="CTR" data-en="CTR">CTR</span> <span class="table-sort-icon"></span>
                     </th>
                     <th data-sort="views" scope="col">
-                      <span data-lang="col-views">Views</span> <span class="table-sort-icon"></span>
+                      <span data-pt="Visualizações" data-en="Views">Visualizações</span> <span class="table-sort-icon"></span>
                     </th>
                   </tr>
                 </thead>

@@ -6,6 +6,20 @@
 /* ============================================
    SIDEBAR
    ============================================ */
+#sidebar {
+  width: 220px;
+  transition: width 200ms ease;
+  overflow: hidden;
+}
+
+#sidebar.collapsed {
+  width: 56px;
+}
+
+#sidebar.collapsed .nav-label {
+  display: none;
+}
+
 .sidebar {
   position: fixed;
   left: 0;
@@ -16,7 +30,6 @@
   border-right: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
-  transition: width var(--transition-default);
   z-index: var(--z-fixed);
 }
 
