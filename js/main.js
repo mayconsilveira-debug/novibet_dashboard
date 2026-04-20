@@ -177,11 +177,11 @@ class Dashboard {
    */
   generateTableData() {
     return [
-      { name: 'Campanha Q1', investimento: 125000, impressions: 12500000, clicks: 45000, ctr: 0.36, views: 2800000 },
-      { name: 'Campanha Q2', investimento: 185000, impressions: 18500000, clicks: 68000, ctr: 0.37, views: 4200000 },
-      { name: 'Campanha Q3', investimento: 95000, impressions: 9500000, clicks: 32000, ctr: 0.34, views: 1900000 },
-      { name: 'Campanha Q4', investimento: 220000, impressions: 22000000, clicks: 85000, ctr: 0.39, views: 5500000 },
-      { name: 'Campanha Black Friday', investimento: 350000, impressions: 45000000, clicks: 165000, ctr: 0.37, views: 9800000 },
+      { name: 'Q1 2025', investimento: 125000, impressions: 12500000, clicks: 45000, ctr: 0.36, views: 2800000 },
+      { name: 'Q2 2025', investimento: 185000, impressions: 18500000, clicks: 68000, ctr: 0.37, views: 4200000 },
+      { name: 'Q3 2025', investimento: 95000, impressions: 9500000, clicks: 32000, ctr: 0.34, views: 1900000 },
+      { name: 'Q4 2025', investimento: 220000, impressions: 22000000, clicks: 85000, ctr: 0.39, views: 5500000 },
+      { name: 'Black Friday 2025', investimento: 350000, impressions: 45000000, clicks: 165000, ctr: 0.37, views: 9800000 },
     ];
   }
   

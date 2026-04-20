@@ -20,8 +20,12 @@
   z-index: var(--z-fixed);
 }
 
-.sidebar.collapsed {
+.sidebar.sidebar-collapsed {
   width: var(--sidebar-collapsed);
+}
+
+.sidebar {
+  transition: width 200ms ease;
 }
 
 .sidebar-header {
@@ -43,7 +47,7 @@
   transition: opacity var(--transition-fast);
 }
 
-.sidebar.collapsed .sidebar-logo {
+.sidebar.sidebar-collapsed .sidebar-logo {
   opacity: 0;
   width: 0;
 }
@@ -90,7 +94,7 @@
   transition: opacity var(--transition-fast);
 }
 
-.sidebar.collapsed .nav-label {
+.sidebar.sidebar-collapsed .nav-label {
   opacity: 0;
 }
 
@@ -135,7 +139,7 @@
   transition: opacity var(--transition-fast);
 }
 
-.sidebar.collapsed .nav-item .nav-text {
+.sidebar.sidebar-collapsed .nav-item .nav-text {
   opacity: 0;
   width: 0;
   overflow: hidden;

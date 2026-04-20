@@ -52,7 +52,7 @@ class Sidebar {
   }
   
   collapse() {
-    this.sidebar.classList.add('collapsed');
+    this.sidebar.classList.add('sidebar-collapsed');
     if (this.mainContent) {
       this.mainContent.classList.add('sidebar-collapsed');
     }
@@ -61,7 +61,7 @@ class Sidebar {
   }
   
   expand() {
-    this.sidebar.classList.remove('collapsed');
+    this.sidebar.classList.remove('sidebar-collapsed');
     if (this.mainContent) {
       this.mainContent.classList.remove('sidebar-collapsed');
     }

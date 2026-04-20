@@ -40,37 +40,27 @@
       
       <nav class="sidebar-nav">
         <div class="nav-section">
-          <span class="nav-label">Menu</span>
+          <span class="nav-label" data-lang="nav-reports">Relatórios</span>
           
           <a href="#" class="nav-item active" aria-current="page">
             <i data-lucide="layout-dashboard" class="nav-icon"></i>
-            <span class="nav-text">Dashboard</span>
-          </a>
-          
-          <a href="#" class="nav-item">
-            <i data-lucide="bar-chart-3" class="nav-icon"></i>
-            <span class="nav-text">Analytics</span>
-          </a>
-          
-          <a href="#" class="nav-item">
-            <i data-lucide="users" class="nav-icon"></i>
-            <span class="nav-text">Customers</span>
+            <span class="nav-text" data-lang="nav-overview">Overview</span>
           </a>
         </div>
         
         <div class="nav-divider" role="separator"></div>
         
         <div class="nav-section">
-          <span class="nav-label">Settings</span>
+          <span class="nav-label" data-lang="nav-pacing">Pacing</span>
           
-          <a href="#" class="nav-item" data-modal-open="settings-modal">
-            <i data-lucide="settings" class="nav-icon"></i>
-            <span class="nav-text">Settings</span>
+          <a href="#" class="nav-item">
+            <i data-lucide="calendar" class="nav-icon"></i>
+            <span class="nav-text" data-lang="nav-pacing-2025">Pacing 2025</span>
           </a>
           
           <a href="#" class="nav-item">
-            <i data-lucide="help-circle" class="nav-icon"></i>
-            <span class="nav-text">Help</span>
+            <i data-lucide="calendar" class="nav-icon"></i>
+            <span class="nav-text" data-lang="nav-pacing-2026">Pacing 2026</span>
           </a>
         </div>
       </nav>
@@ -85,12 +75,23 @@
         </div>
         
         <div class="topbar-right">
+          <!-- Language Toggle -->
+          <div class="lang-toggle" style="display: flex; gap: var(--space-2);">
+            <button class="btn btn-sm btn-secondary lang-btn active" data-lang-switch="pt-BR" title="Português">
+              🇧🇷 PT-BR
+            </button>
+            <button class="btn btn-sm btn-secondary lang-btn" data-lang-switch="en" title="English">
+              🇬🇧 EN
+            </button>
+          </div>
+          
           <div class="search-box">
             <i data-lucide="search" class="search-icon" style="width: 16px; height: 16px;"></i>
             <input 
               type="search" 
               class="input search-input" 
-              placeholder="Search..."
+              placeholder="Buscar..."
+              data-lang-placeholder="search-placeholder"
               aria-label="Search"
             >
           </div>
@@ -110,7 +111,7 @@
         <!-- Stat Cards -->
         <div class="grid grid-cols-4 mb-4" style="margin-bottom: var(--space-6);">
           <div class="stat-card" role="button" tabindex="0" aria-label="Impressions: 60.8 Million, up 12%" data-metric="impressions">
-            <div class="stat-label">Impressions</div>
+            <div class="stat-label" data-lang="stat-impressions">Impressions</div>
             <div class="stat-value">60.8M</div>
             <div class="stat-change positive">
               <i data-lucide="trending-up" style="width: 12px; height: 12px;"></i>
@@ -119,7 +120,7 @@
           </div>
           
           <div class="stat-card" role="button" tabindex="0" aria-label="Clicks: 195.021, up 8%" data-metric="clicks">
-            <div class="stat-label">Clicks</div>
+            <div class="stat-label" data-lang="stat-clicks">Clicks</div>
             <div class="stat-value">195.021</div>
             <div class="stat-change positive">
               <i data-lucide="trending-up" style="width: 12px; height: 12px;"></i>
@@ -128,7 +129,7 @@
           </div>
           
           <div class="stat-card" role="button" tabindex="0" aria-label="CTR: 0.32%, down 2%" data-metric="ctr">
-            <div class="stat-label">CTR</div>
+            <div class="stat-label" data-lang="stat-ctr">CTR</div>
             <div class="stat-value">0.32%</div>
             <div class="stat-change negative">
               <i data-lucide="trending-down" style="width: 12px; height: 12px;"></i>
@@ -137,7 +138,7 @@
           </div>
           
           <div class="stat-card" role="button" tabindex="0" aria-label="Complete Views: 12.0 Million, up 15%" data-metric="views">
-            <div class="stat-label">Complete Views</div>
+            <div class="stat-label" data-lang="stat-views">Complete Views</div>
             <div class="stat-value">12.0M</div>
             <div class="stat-change positive">
               <i data-lucide="trending-up" style="width: 12px; height: 12px;"></i>
@@ -149,11 +150,11 @@
         <!-- Chart Section -->
         <div class="chart-container" style="margin-bottom: var(--space-6);">
           <div class="chart-header">
-            <h2 class="chart-title">Performance ao longo do tempo</h2>
+            <h2 class="chart-title" data-lang="chart-title">Performance ao longo do tempo</h2>
             <div style="display: flex; gap: var(--space-2);">
-              <button class="btn btn-sm btn-secondary">Ano</button>
-              <button class="btn btn-sm btn-primary">Mês</button>
-              <button class="btn btn-sm btn-secondary">Semana</button>
+              <button class="btn btn-sm btn-secondary" data-lang="btn-year">Ano</button>
+              <button class="btn btn-sm btn-primary" data-lang="btn-month">Mês</button>
+              <button class="btn btn-sm btn-secondary" data-lang="btn-week">Semana</button>
             </div>
           </div>
           <div style="height: 300px;">
@@ -164,7 +165,7 @@
         <!-- Table Section -->
         <div class="card">
           <div class="card-header" style="display: flex; align-items: center; justify-content: space-between;">
-            <h3 class="card-title">Campanhas</h3>
+            <h3 class="card-title" data-lang="table-title">Campanhas</h3>
             <div class="search-box" style="width: 240px;">
               <i data-lucide="search" class="search-icon" style="width: 16px; height: 16px;"></i>
               <input 
@@ -172,6 +173,7 @@
                 id="table-search"
                 class="input search-input" 
                 placeholder="Buscar campanha..."
+                data-lang-placeholder="table-search-placeholder"
                 style="width: 100%;"
                 aria-label="Search campaigns"
               >
@@ -184,22 +186,22 @@
                 <thead>
                   <tr>
                     <th data-sort="name" scope="col">
-                      Campanha <span class="table-sort-icon"></span>
+                      <span data-lang="col-campaign">Campanha</span> <span class="table-sort-icon"></span>
                     </th>
                     <th data-sort="investimento" scope="col">
-                      Investimento <span class="table-sort-icon"></span>
+                      <span data-lang="col-investment">Investimento</span> <span class="table-sort-icon"></span>
                     </th>
                     <th data-sort="impressions" scope="col">
-                      Impressions <span class="table-sort-icon"></span>
+                      <span data-lang="col-impressions">Impressions</span> <span class="table-sort-icon"></span>
                     </th>
                     <th data-sort="clicks" scope="col">
-                      Clicks <span class="table-sort-icon"></span>
+                      <span data-lang="col-clicks">Clicks</span> <span class="table-sort-icon"></span>
                     </th>
                     <th data-sort="ctr" scope="col">
-                      CTR <span class="table-sort-icon"></span>
+                      <span data-lang="col-ctr">CTR</span> <span class="table-sort-icon"></span>
                     </th>
                     <th data-sort="views" scope="col">
-                      Views <span class="table-sort-icon"></span>
+                      <span data-lang="col-views">Views</span> <span class="table-sort-icon"></span>
                     </th>
                   </tr>
                 </thead>
@@ -303,6 +305,7 @@
   </div>
   
   <!-- Scripts -->
+  <script src="js/language.js"></script>
   <script src="js/sidebar.js"></script>
   <script src="js/charts.js"></script>
   <script src="js/main.js"></script>
