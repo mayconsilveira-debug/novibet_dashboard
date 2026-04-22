@@ -71,7 +71,6 @@ class Dashboard {
     this.initTable();
     this.initTableDrillButtons();
     this.initYearFilter();
-    this.initPageNavigation();
     this.initModal();
     this.initToast();
     this.initSearch();
@@ -554,42 +553,6 @@ class Dashboard {
     });
   }
   
-  /**
-   * Initialize sidebar page navigation
-   */
-  initPageNavigation() {
-    document.querySelectorAll('.nav-item[data-page]').forEach(item => {
-      item.addEventListener('click', (e) => {
-        e.preventDefault();
-        const page = item.dataset.page;
-        
-        // Update active nav item
-        document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
-        item.classList.add('active');
-        
-        // Switch pages
-        const overviewPage = document.getElementById('page-overview');
-        const pacingPage = document.getElementById('page-pacing');
-        
-        if (page === 'overview') {
-          if (overviewPage) overviewPage.style.display = '';
-          if (pacingPage) pacingPage.style.display = 'none';
-        } else if (page === 'pacing-2025' || page === 'pacing-2026') {
-          if (overviewPage) overviewPage.style.display = 'none';
-          if (pacingPage) pacingPage.style.display = '';
-          
-          const year = page === 'pacing-2025' ? 2025 : 2026;
-          PacingModule.init(year);
-          
-          // Re-render lucide icons for pacing page
-          setTimeout(() => {
-            if (typeof lucide !== 'undefined') lucide.createIcons();
-          }, 50);
-        }
-      });
-    });
-  }
-
   filterTable(query) {
     const filtered = this.tableData.filter(row => 
       row.name.toLowerCase().includes(query)
@@ -825,6 +788,8 @@ const PacingModule = {
     if (el) el.innerHTML = insights[year];
   }
 };
+
+window.PacingModule = PacingModule;
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
