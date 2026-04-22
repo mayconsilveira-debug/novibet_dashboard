@@ -84,6 +84,12 @@
         </div>
         
         <div class="topbar-right">
+          <!-- Theme Toggle -->
+          <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+            <i data-lucide="moon" id="theme-icon" style="width:14px;height:14px;"></i>
+            <span id="theme-label">Light</span>
+          </button>
+
           <!-- Date Range Filter -->
           <div class="date-range" style="display: flex; align-items: center; gap: var(--space-2);">
             <span class="date-label" data-pt="De" data-en="From">De</span>
@@ -429,7 +435,8 @@
   <script src="js/sidebar.js"></script>
   <script src="js/charts.js"></script>
   <script src="js/main.js"></script>
-  
+  <script src="js/theme.js"></script>
+
   <!-- Initialize Lucide Icons -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {

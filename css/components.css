@@ -870,3 +870,80 @@
   font-weight: var(--font-semibold);
   color: var(--color-text-primary);
 }
+
+/* KPI card accent colors */
+.stat-card[data-metric="impressions"] { border-top: 2px solid var(--color-kpi-impressions); }
+.stat-card[data-metric="clicks"]      { border-top: 2px solid var(--color-kpi-clicks); }
+.stat-card[data-metric="ctr"]         { border-top: 2px solid var(--color-kpi-ctr); }
+.stat-card[data-metric="views"]       { border-top: 2px solid var(--color-kpi-views); }
+
+.stat-card[data-metric="impressions"] .stat-value { color: var(--color-kpi-impressions); }
+.stat-card[data-metric="clicks"]      .stat-value { color: var(--color-kpi-clicks); }
+.stat-card[data-metric="ctr"]         .stat-value { color: var(--color-kpi-ctr); }
+.stat-card[data-metric="views"]       .stat-value { color: var(--color-kpi-views); }
+
+/* stat-label uppercase caps style */
+.stat-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin-bottom: 6px;
+}
+
+/* stat-value bigger and bolder */
+.stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--color-text-primary);
+}
+
+/* Dark mode — input and select styling */
+[data-theme="dark"] .input,
+[data-theme="dark"] .select {
+  background: var(--color-surface-elevated);
+  color: var(--color-text-primary);
+  border-color: var(--color-border);
+}
+
+/* Dark mode — table row hover */
+[data-theme="dark"] .table tbody tr:hover {
+  background: var(--color-surface-elevated);
+}
+
+/* Dark mode — table header */
+[data-theme="dark"] .table thead th {
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Dark mode — chart container */
+[data-theme="dark"] .chart-container {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+/* Theme toggle button */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.theme-toggle:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}

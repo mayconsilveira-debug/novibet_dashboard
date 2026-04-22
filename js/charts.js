@@ -11,12 +11,12 @@ class DashboardCharts {
     
     // KPI colors
     this.kpiColors = {
-      impressions: { border: '#2563EB', bg: 'rgba(37, 99, 235, 0.1)' },
-      clicks: { border: '#7C3AED', bg: 'rgba(124, 58, 237, 0.1)' },
-      ctr: { border: '#0891B2', bg: 'rgba(8, 145, 178, 0.1)' },
-      views: { border: '#059669', bg: 'rgba(5, 150, 105, 0.1)' }
+      impressions: { border: '#A89CF7', bg: 'rgba(168, 156, 247, 0.12)' },
+      clicks: { border: '#38BDF8', bg: 'rgba(56, 189, 248, 0.12)' },
+      ctr: { border: '#FB923C', bg: 'rgba(251, 146, 60, 0.12)' },
+      views: { border: '#34D399', bg: 'rgba(52, 211, 153, 0.12)' }
     };
-    
+
     // Drill labels
     this.drillLabels = {
       ano: ['2023', '2024', '2025', '2026'],

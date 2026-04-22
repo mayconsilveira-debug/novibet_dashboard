@@ -37,7 +37,13 @@
   /* Border & Divider */
   --color-border: #E5E7EB;
   --color-border-light: #F3F4F6;
-  
+
+  /* KPI accent colors */
+  --color-kpi-impressions: #7C6FF7;
+  --color-kpi-clicks: #38BDF8;
+  --color-kpi-ctr: #FB923C;
+  --color-kpi-views: #34D399;
+
   /* ============================================
      BORDER RADIUS
      ============================================ */
@@ -122,4 +128,37 @@
   --z-modal: 500;
   --z-toast: 600;
   --z-tooltip: 700;
+}
+
+[data-theme="dark"] {
+  --color-bg: #1A2B35;
+  --color-surface: #1F3240;
+  --color-surface-elevated: #243848;
+  --color-text-primary: #F0EEF8;
+  --color-text-secondary: #8BA5B0;
+  --color-text-muted: #6B8A99;
+  --color-accent: #A89CF7;
+  --color-accent-light: rgba(168,156,247,0.12);
+  --color-accent-dark: #6355E5;
+  --color-border: rgba(255,255,255,0.07);
+  --color-border-light: rgba(255,255,255,0.04);
+  --color-success: #10E090;
+  --color-success-light: rgba(16,224,144,0.12);
+  --color-warning: #FACC15;
+  --color-warning-light: rgba(250,204,21,0.12);
+  --color-danger: #F87171;
+  --color-danger-light: rgba(248,113,113,0.12);
+  --color-info: #38BDF8;
+  --color-info-light: rgba(56,189,248,0.12);
+
+  --color-kpi-impressions: #A89CF7;
+  --color-kpi-clicks: #38BDF8;
+  --color-kpi-ctr: #FB923C;
+  --color-kpi-views: #34D399;
+
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.2);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.25);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.3);
+  --shadow-card: 0 2px 8px 0 rgb(0 0 0 / 0.25);
+  --shadow-card-hover: 0 8px 16px 0 rgb(0 0 0 / 0.35);
 }
