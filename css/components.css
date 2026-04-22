@@ -402,8 +402,25 @@
 }
 
 .btn-lg {
-  padding: var(--space-3) var(--space-5);
-  font-size: var(--text-body-lg);
+  padding: var(--space-3) var(--space-6);
+  font-size: var(--text-body);
+}
+
+/* Year Filter Buttons */
+.year-btn {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid #ddd;
+  background: white;
+  cursor: pointer;
+  font-weight: 500;
+  color: #555;
+  transition: all 200ms ease;
+}
+.year-btn.active {
+  background: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
 }
 
 .btn-icon {

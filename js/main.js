@@ -292,18 +292,11 @@ class Dashboard {
    * Initialize year filter buttons (2025/2026)
    */
   initYearFilter() {
-    document.querySelectorAll('.year-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const year = parseInt(btn.dataset.year);
-        this.currentYear = year;
-        this.expandedRows.clear();
-        
-        // Toggle active class
-        document.querySelectorAll('.year-btn').forEach(b => b.classList.remove('btn-primary'));
-        document.querySelectorAll('.year-btn').forEach(b => b.classList.add('btn-secondary'));
-        btn.classList.remove('btn-secondary');
-        btn.classList.add('btn-primary');
-        
+    const loadDataForYear = (year) => {
+      this.currentYear = year;
+      this.expandedRows.clear();
+      
+      if (year) {
         // Update data references
         this.packageData = year === 2025 ? this.packageData2025 : this.packageData2026;
         this.channelData = year === 2025 ? this.channelData2025 : this.channelData2026;
@@ -314,17 +307,30 @@ class Dashboard {
         else if (this.currentDrillLevel === 'channel') this.tableData = this.channelData;
         else if (this.currentDrillLevel === 'format') this.tableData = this.formatData;
         
-        // Re-render table
-        const searchInput = document.getElementById('table-search');
-        if (searchInput && searchInput.value) {
-          this.filterTable(searchInput.value.toLowerCase());
-        } else {
-          this.renderTable();
-        }
-        
         // Update mini charts with year data
         if (window.dashboardCharts) {
           window.dashboardCharts.updateMiniChartsForYear(year);
+        }
+      }
+      
+      // Re-render table
+      const searchInput = document.getElementById('table-search');
+      if (searchInput && searchInput.value) {
+        this.filterTable(searchInput.value.toLowerCase());
+      } else {
+        this.renderTable();
+      }
+    };
+    
+    document.querySelectorAll('.year-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const isAlreadyActive = btn.classList.contains('active');
+        document.querySelectorAll('.year-btn').forEach(b => b.classList.remove('active'));
+        if (!isAlreadyActive) {
+          btn.classList.add('active');
+          loadDataForYear(parseInt(btn.dataset.year));
+        } else {
+          loadDataForYear(null); // no year selected
         }
       });
     });
