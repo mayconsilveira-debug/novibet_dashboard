@@ -71,6 +71,7 @@ class Dashboard {
     this.initTable();
     this.initTableDrillButtons();
     this.initYearFilter();
+    this.initPageNavigation();
     this.initModal();
     this.initToast();
     this.initSearch();
@@ -553,6 +554,42 @@ class Dashboard {
     });
   }
   
+  /**
+   * Initialize sidebar page navigation
+   */
+  initPageNavigation() {
+    document.querySelectorAll('.nav-item[data-page]').forEach(item => {
+      item.addEventListener('click', (e) => {
+        e.preventDefault();
+        const page = item.dataset.page;
+        
+        // Update active nav item
+        document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+        item.classList.add('active');
+        
+        // Switch pages
+        const overviewPage = document.getElementById('page-overview');
+        const pacingPage = document.getElementById('page-pacing');
+        
+        if (page === 'overview') {
+          if (overviewPage) overviewPage.style.display = '';
+          if (pacingPage) pacingPage.style.display = 'none';
+        } else if (page === 'pacing-2025' || page === 'pacing-2026') {
+          if (overviewPage) overviewPage.style.display = 'none';
+          if (pacingPage) pacingPage.style.display = '';
+          
+          const year = page === 'pacing-2025' ? 2025 : 2026;
+          PacingModule.init(year);
+          
+          // Re-render lucide icons for pacing page
+          setTimeout(() => {
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+          }, 50);
+        }
+      });
+    });
+  }
+
   filterTable(query) {
     const filtered = this.tableData.filter(row => 
       row.name.toLowerCase().includes(query)
@@ -576,6 +613,218 @@ class Dashboard {
     this.renderTable(filtered.map((row, idx) => ({...row, _origIndex: idx})));
   }
 }
+
+// Pacing Module
+const PacingModule = {
+
+  mockData: {
+    2025: {
+      vtr: '16,02%',
+      engagement: '16,37%',
+      deliveryRate: 154.45,
+      packages: [
+        { name: 'Football 2026 – ESPN', invested: 619427, goal: 400000, impressions: 32750000, ctr: 0.30 },
+        { name: 'NBA/NBB 25/26 – ESPN', invested: 221798, goal: 300000, impressions: 9190000,  ctr: 0.46 },
+        { name: 'Projeto 2026 – Globo', invested: 210629, goal: 280000, impressions: 9340000,  ctr: 0.41 },
+        { name: 'Projeto 2026 – Logan', invested: 85189,  goal: 120000, impressions: 3220000,  ctr: 0.50 },
+      ],
+      trend: {
+        labels: ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'],
+        actual:   [619427, 841225, 926414, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        expected: [139035, 278070, 417105, 556140, 695175, 834210, 973245, 1112280, 1251315, 1390350, 1529385, 1668416]
+      }
+    },
+    2026: {
+      vtr: '18,50%',
+      engagement: '19,20%',
+      deliveryRate: 42.10,
+      packages: [
+        { name: 'Football 2026 – ESPN', invested: 210000, goal: 619427, impressions: 12000000, ctr: 0.28 },
+        { name: 'NBA/NBB 25/26 – ESPN', invested: 80000,  goal: 221798, impressions: 3500000,  ctr: 0.40 },
+        { name: 'Projeto 2026 – Globo', invested: 70000,  goal: 210629, impressions: 3000000,  ctr: 0.38 },
+        { name: 'Projeto 2026 – Logan', invested: 25000,  goal: 85189,  impressions: 1000000,  ctr: 0.45 },
+      ],
+      trend: {
+        labels: ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'],
+        actual:   [210000, 290000, 385000, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        expected: [113004, 226008, 339012, 452016, 565020, 678024, 791028, 904032, 1017036, 1130040, 1243044, 1136043]
+      }
+    }
+  },
+
+  currentYear: 2025,
+
+  init(year) {
+    this.currentYear = year;
+    const data = this.mockData[year];
+    document.getElementById('pacing-title').textContent = `Pacing ${year}`;
+    document.getElementById('pacing-vtr').textContent = data.vtr;
+    document.getElementById('pacing-engagement').textContent = data.engagement;
+    document.getElementById('pacing-gauge-value').textContent = data.deliveryRate.toFixed(2).replace('.', ',') + '%';
+    this.renderGauge(data.deliveryRate);
+    this.renderBars(data.packages);
+    this.renderTrend(data.trend);
+    this.renderTable(data.packages);
+    this.updateInsight(year);
+  },
+
+  renderGauge(value) {
+    const ctx = document.getElementById('pacingGauge');
+    if (!ctx) return;
+    if (window._pacingGaugeChart) window._pacingGaugeChart.destroy();
+
+    // Color: green if >=90, yellow if >=60, red if <60
+    const color = value >= 90 ? '#10B981' : value >= 60 ? '#F59E0B' : '#EF4444';
+
+    window._pacingGaugeChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        datasets: [{
+          data: [Math.min(value, 200), Math.max(0, 200 - Math.min(value, 200))],
+          backgroundColor: [color, '#F3F4F6'],
+          borderWidth: 0,
+          circumference: 180,
+          rotation: 270
+        }]
+      },
+      options: {
+        responsive: false,
+        cutout: '75%',
+        plugins: { legend: { display: false }, tooltip: { enabled: false } }
+      }
+    });
+  },
+
+  renderBars(packages) {
+    const container = document.getElementById('pacing-bars');
+    if (!container) return;
+    container.innerHTML = packages.map(pkg => {
+      const pct = Math.min((pkg.invested / pkg.goal) * 100, 100).toFixed(0);
+      const color = pct >= 90 ? '#10B981' : pct >= 60 ? '#F59E0B' : '#EF4444';
+      return `
+        <div style="margin-bottom:10px;">
+          <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--color-text-secondary); margin-bottom:4px;">
+            <span>${pkg.name}</span>
+            <span style="font-weight:600; color:var(--color-text-primary);">${pct}%</span>
+          </div>
+          <div style="height:6px; background:#F3F4F6; border-radius:999px; overflow:hidden;">
+            <div style="height:100%; width:${pct}%; background:${color}; border-radius:999px; transition:width 0.4s ease;"></div>
+          </div>
+        </div>`;
+    }).join('');
+  },
+
+  renderTrend(trend) {
+    const ctx = document.getElementById('pacingTrendChart');
+    if (!ctx) return;
+    if (window._pacingTrendChart) window._pacingTrendChart.destroy();
+    window._pacingTrendChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: trend.labels,
+        datasets: [
+          {
+            label: 'Realizado',
+            data: trend.actual,
+            borderColor: '#2563EB',
+            backgroundColor: 'rgba(37,99,235,0.08)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 4,
+            pointBackgroundColor: '#2563EB',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            spanGaps: false
+          },
+          {
+            label: 'Meta esperada',
+            data: trend.expected,
+            borderColor: '#9CA3AF',
+            borderWidth: 2,
+            borderDash: [6, 4],
+            fill: false,
+            tension: 0,
+            pointRadius: 0
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+            align: 'end',
+            labels: { usePointStyle: true, pointStyle: 'circle', padding: 16, font: { size: 11 } }
+          },
+          tooltip: {
+            backgroundColor: '#1A1D2E',
+            callbacks: {
+              label: ctx => ` R$ ${ctx.parsed.y.toLocaleString('pt-BR')}` 
+            }
+          }
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#9CA3AF' } },
+          y: {
+            border: { display: false },
+            grid: { color: '#F3F4F6' },
+            ticks: {
+              font: { size: 11 }, color: '#9CA3AF',
+              callback: v => 'R$ ' + (v/1000).toFixed(0) + 'k'
+            }
+          }
+        }
+      }
+    });
+  },
+
+  renderTable(packages) {
+    const tbody = document.getElementById('pacing-table-body');
+    if (!tbody) return;
+    const rows = packages.map(pkg => {
+      const rate = ((pkg.invested / pkg.goal) * 100).toFixed(1);
+      const status = rate >= 90 ? 'On Track' : rate >= 60 ? 'Em risco' : 'Atrasado';
+      const badgeColor = rate >= 90 ? 'badge-green' : rate >= 60 ? 'badge-yellow' : 'badge-red';
+      return `<tr>
+        <td><strong>${pkg.name}</strong></td>
+        <td>R$ ${pkg.invested.toLocaleString('pt-BR')}</td>
+        <td>R$ ${pkg.goal.toLocaleString('pt-BR')}</td>
+        <td>${rate}%</td>
+        <td>${(pkg.impressions/1000000).toFixed(2)}M</td>
+        <td>${pkg.ctr}%</td>
+        <td><span class="badge ${badgeColor}">${status}</span></td>
+      </tr>`;
+    }).join('');
+    tbody.innerHTML = rows;
+  },
+
+  updateInsight(year) {
+    const insights = {
+      2025: `O investimento acumulado até março representa <strong style="color:var(--color-text-primary);">154,45%</strong>
+        da meta esperada para o período — ritmo acima do planejado.
+        O pacote <strong style="color:var(--color-text-primary);">Football 2026 – ESPN</strong> lidera a entrega com
+        R$ 619k investidos, superando a meta em 54%.
+        <strong style="color:#F59E0B;">Atenção:</strong> o pacote
+        <strong style="color:var(--color-text-primary);">Projeto 2026 – Logan</strong> está em risco —
+        apenas 71% da meta executada. Recomenda-se revisão de alocação para os próximos meses.`,
+
+      2026: `O investimento em 2026 está em fase inicial com <strong style="color:var(--color-text-primary);">42,10%</strong>
+        da meta anual executada até março — ritmo dentro do esperado para o primeiro trimestre.
+        O pacote <strong style="color:var(--color-text-primary);">Football 2026 – ESPN</strong> concentra
+        54% do investimento total realizado.
+        <strong style="color:#10B981;">Destaque positivo:</strong> o pacote
+        <strong style="color:var(--color-text-primary);">Projeto 2026 – Logan</strong> apresenta
+        o maior CTR entre os pacotes (0,45%).
+        Monitorar aceleração de entrega a partir de abril para manter o pacing no prazo.`
+    };
+
+    const el = document.getElementById('insight-text');
+    if (el) el.innerHTML = insights[year];
+  }
+};
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
