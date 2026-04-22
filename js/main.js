@@ -7,7 +7,30 @@ class Dashboard {
   constructor() {
     this.currentSort = { column: null, direction: 'asc' };
     this.statCards = [];
-    this.tableData = this.generateTableData();
+    this.expandedRows = new Set();
+    this.currentDrillLevel = 'package';
+    this.packageData = [
+      { name: 'Football 2026 – ESPN', investimento: 619427, impressions: 32750000, clicks: 98234, ctr: 0.30, views: 6200000,
+        children: [
+          { name: 'Pre-roll 30s', investimento: 310000, impressions: 18000000, clicks: 52000, ctr: 0.29, views: 4100000 },
+          { name: 'Display Masthead', investimento: 309427, impressions: 14750000, clicks: 46234, ctr: 0.31, views: 2100000 }
+        ]
+      },
+      { name: 'NBA/NBB 25/26 – ESPN', investimento: 221798, impressions: 9190000, clicks: 42100, ctr: 0.46, views: 2800000, children: [] },
+      { name: 'Projeto 2026 – Globo', investimento: 210629, impressions: 9340000, clicks: 38700, ctr: 0.41, views: 2200000, children: [] },
+      { name: 'Projeto 2026 – Logan', investimento: 85189, impressions: 3220000, clicks: 15987, ctr: 0.50, views: 800000, children: [] }
+    ];
+    this.channelData = [
+      { name: 'ESPN', investimento: 841225, impressions: 41940000, clicks: 140334, ctr: 0.33, views: 9000000, children: [] },
+      { name: 'Globo', investimento: 210629, impressions: 9340000, clicks: 38700, ctr: 0.41, views: 2200000, children: [] },
+      { name: 'Logan', investimento: 85189, impressions: 3220000, clicks: 15987, ctr: 0.50, views: 800000, children: [] }
+    ];
+    this.formatData = [
+      { name: 'Digital', investimento: 1012000, impressions: 58600000, clicks: 187800, ctr: 0.32, views: 11600000, children: [] },
+      { name: 'Display', investimento: 420000, impressions: 1500000, clicks: 5200, ctr: 0.35, views: 300000, children: [] },
+      { name: 'Vídeo', investimento: 236416, impressions: 740000, clicks: 2021, ctr: 0.27, views: 100000, children: [] }
+    ];
+    this.tableData = this.packageData;
     
     this.init();
   }
@@ -15,6 +38,7 @@ class Dashboard {
   init() {
     this.initStatCards();
     this.initTable();
+    this.initTableDrillButtons();
     this.initModal();
     this.initToast();
     this.initSearch();
@@ -182,35 +206,141 @@ class Dashboard {
   }
   
   /**
-   * Render table rows
+   * Initialize table drill buttons (Pacote/Canal/Formato)
    */
-  renderTable() {
-    const tbody = document.querySelector('.table tbody');
-    if (!tbody) return;
+  initTableDrillButtons() {
+    const drillButtons = {
+      package: document.getElementById('drill-package'),
+      channel: document.getElementById('drill-channel'),
+      format: document.getElementById('drill-format')
+    };
+    const colLabel = document.getElementById('drill-col-label');
     
-    tbody.innerHTML = this.tableData.map(row => `
-      <tr>
-        <td><strong>${row.name}</strong></td>
-        <td><span class="badge badge-blue">${this.formatCurrency(row.investimento)}</span></td>
-        <td>${this.formatNumber(row.impressions)}</td>
-        <td>${this.formatNumber(row.clicks)}</td>
-        <td>${row.ctr}%</td>
-        <td>${this.formatNumber(row.views)}</td>
-      </tr>
-    `).join('');
+    const setActive = (level) => {
+      this.currentDrillLevel = level;
+      this.expandedRows.clear();
+      
+      // Update button styles
+      Object.keys(drillButtons).forEach(key => {
+        const btn = drillButtons[key];
+        if (btn) {
+          btn.classList.remove('btn-primary', 'btn-secondary');
+          btn.classList.add(key === level ? 'btn-primary' : 'btn-secondary');
+        }
+      });
+      
+      // Update data
+      if (level === 'package') this.tableData = this.packageData;
+      else if (level === 'channel') this.tableData = this.channelData;
+      else if (level === 'format') this.tableData = this.formatData;
+      
+      // Update column label
+      if (colLabel) {
+        const labels = { package: 'Pacote', channel: 'Canal', format: 'Formato' };
+        colLabel.textContent = labels[level];
+        colLabel.dataset.pt = labels[level];
+        colLabel.dataset.en = level === 'package' ? 'Package' : level === 'channel' ? 'Channel' : 'Format';
+      }
+      
+      // Re-apply search filter if exists
+      const searchInput = document.getElementById('table-search');
+      if (searchInput && searchInput.value) {
+        this.filterTable(searchInput.value.toLowerCase());
+      } else {
+        this.renderTable();
+      }
+    };
+    
+    drillButtons.package?.addEventListener('click', () => setActive('package'));
+    drillButtons.channel?.addEventListener('click', () => setActive('channel'));
+    drillButtons.format?.addEventListener('click', () => setActive('format'));
   }
   
   /**
-   * Generate sample table data
+   * Render table rows with expandable children
    */
-  generateTableData() {
-    return [
-      { name: 'Q1 2025', investimento: 125000, impressions: 12500000, clicks: 45000, ctr: 0.36, views: 2800000 },
-      { name: 'Q2 2025', investimento: 185000, impressions: 18500000, clicks: 68000, ctr: 0.37, views: 4200000 },
-      { name: 'Q3 2025', investimento: 95000, impressions: 9500000, clicks: 32000, ctr: 0.34, views: 1900000 },
-      { name: 'Q4 2025', investimento: 220000, impressions: 22000000, clicks: 85000, ctr: 0.39, views: 5500000 },
-      { name: 'Black Friday 2025', investimento: 350000, impressions: 45000000, clicks: 165000, ctr: 0.37, views: 9800000 },
-    ];
+  renderTable(data = null) {
+    const tbody = document.querySelector('.table tbody');
+    if (!tbody) return;
+    
+    const rows = data || this.tableData;
+    let html = '';
+    let totalInvest = 0, totalImp = 0, totalClicks = 0, totalViews = 0;
+    
+    rows.forEach((row, index) => {
+      totalInvest += row.investimento;
+      totalImp += row.impressions;
+      totalClicks += row.clicks;
+      totalViews += row.views;
+      
+      const hasChildren = row.children && row.children.length > 0;
+      const isExpanded = this.expandedRows.has(index);
+      const toggleIcon = hasChildren ? (isExpanded ? '▾' : '▸') : '';
+      
+      html += `
+        <tr data-row-index="${index}">
+          <td>
+            ${hasChildren ? `<button class="drill-toggle" style="background:none;border:none;cursor:pointer;padding:0 4px 0 0;font-size:12px;">${toggleIcon}</button>` : '<span style="padding:0 16px 0 0;"></span>'}
+            <strong>${row.name}</strong>
+          </td>
+          <td><span class="badge badge-blue">${this.formatCurrency(row.investimento)}</span></td>
+          <td>${this.formatNumber(row.impressions)}</td>
+          <td>${this.formatNumber(row.clicks)}</td>
+          <td>${row.ctr.toFixed(2)}%</td>
+          <td>${this.formatNumber(row.views)}</td>
+        </tr>
+      `;
+      
+      // Render children if expanded
+      if (isExpanded && hasChildren) {
+        row.children.forEach(child => {
+          html += `
+            <tr class="child-row" style="background:#f8fafc;">
+              <td style="padding-left: 32px; color: var(--color-text-muted);">${child.name}</td>
+              <td><span class="badge badge-blue">${this.formatCurrency(child.investimento)}</span></td>
+              <td>${this.formatNumber(child.impressions)}</td>
+              <td>${this.formatNumber(child.clicks)}</td>
+              <td>${child.ctr.toFixed(2)}%</td>
+              <td>${this.formatNumber(child.views)}</td>
+            </tr>
+          `;
+        });
+      }
+    });
+    
+    // Totals row
+    const avgCtr = totalClicks / totalImp * 100;
+    html += `
+      <tr style="font-weight: 600; border-top: 2px solid var(--color-border);">
+        <td>Total</td>
+        <td><span class="badge badge-blue">${this.formatCurrency(totalInvest)}</span></td>
+        <td>${this.formatNumber(totalImp)}</td>
+        <td>${this.formatNumber(totalClicks)}</td>
+        <td>${avgCtr.toFixed(2)}%</td>
+        <td>${this.formatNumber(totalViews)}</td>
+      </tr>
+    `;
+    
+    tbody.innerHTML = html;
+    
+    // Bind toggle click handlers
+    tbody.querySelectorAll('.drill-toggle').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const rowIndex = parseInt(e.target.closest('tr').dataset.rowIndex);
+        if (this.expandedRows.has(rowIndex)) {
+          this.expandedRows.delete(rowIndex);
+        } else {
+          this.expandedRows.add(rowIndex);
+        }
+        
+        const searchInput = document.getElementById('table-search');
+        if (searchInput && searchInput.value) {
+          this.filterTable(searchInput.value.toLowerCase());
+        } else {
+          this.renderTable();
+        }
+      });
+    });
   }
   
   /**
@@ -348,30 +478,22 @@ class Dashboard {
       row.name.toLowerCase().includes(query)
     );
     
-    const tbody = document.querySelector('.table tbody');
-    if (!tbody) return;
-    
     if (filtered.length === 0) {
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="6" class="text-center" style="padding: var(--space-8);">
-            <p class="text-muted">Nenhum resultado encontrado</p>
-          </td>
-        </tr>
-      `;
+      const tbody = document.querySelector('.table tbody');
+      if (tbody) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="text-center" style="padding: var(--space-8);">
+              <p class="text-muted">Nenhum resultado encontrado</p>
+            </td>
+          </tr>
+        `;
+      }
       return;
     }
     
-    tbody.innerHTML = filtered.map(row => `
-      <tr>
-        <td><strong>${row.name}</strong></td>
-        <td><span class="badge badge-blue">${this.formatCurrency(row.investimento)}</span></td>
-        <td>${this.formatNumber(row.impressions)}</td>
-        <td>${this.formatNumber(row.clicks)}</td>
-        <td>${row.ctr}%</td>
-        <td>${this.formatNumber(row.views)}</td>
-      </tr>
-    `).join('');
+    // Use renderTable with filtered data but reset row indices for display
+    this.renderTable(filtered.map((row, idx) => ({...row, _origIndex: idx})));
   }
 }
 

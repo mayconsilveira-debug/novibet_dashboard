@@ -196,20 +196,24 @@
         
         <!-- Table Section -->
         <div class="card">
-          <div class="card-header" style="display: flex; align-items: center; justify-content: space-between;">
-            <h3 class="card-title" data-pt="Campanhas" data-en="Campaigns">Campanhas</h3>
+          <div class="card-header" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-4);">
             <div class="search-box" style="width: 240px;">
               <i data-lucide="search" class="search-icon" style="width: 16px; height: 16px;"></i>
               <input 
                 type="search" 
                 id="table-search"
                 class="input search-input" 
-                placeholder="Buscar campanha..."
-                data-pt="Buscar campanha..."
-                data-en="Search campaign..."
+                placeholder="Buscar..."
+                data-pt="Buscar..."
+                data-en="Search..."
                 style="width: 100%;"
-                aria-label="Search campaigns"
+                aria-label="Search table"
               >
+            </div>
+            <div style="display:flex;gap:var(--space-2);">
+              <button class="btn btn-sm btn-primary" id="drill-package" data-pt="Pacote" data-en="Package">Pacote</button>
+              <button class="btn btn-sm btn-secondary" id="drill-channel" data-pt="Canal" data-en="Channel">Canal</button>
+              <button class="btn btn-sm btn-secondary" id="drill-format" data-pt="Formato" data-en="Format">Formato</button>
             </div>
           </div>
           
@@ -219,7 +223,7 @@
                 <thead>
                   <tr>
                     <th data-sort="name" scope="col">
-                      <span data-pt="Campanha" data-en="Campaign">Campanha</span> <span class="table-sort-icon"></span>
+                      <span id="drill-col-label" data-pt="Pacote" data-en="Package">Pacote</span> <span class="table-sort-icon"></span>
                     </th>
                     <th data-sort="investimento" scope="col">
                       <span data-pt="Investimento" data-en="Investment">Investimento</span> <span class="table-sort-icon"></span>
