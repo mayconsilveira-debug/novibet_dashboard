@@ -259,119 +259,121 @@
       </div>
       
       <!-- Pacing Page -->
-      <div id="page-pacing" class="content-area" style="display:none;">
-        
-        <!-- Header row -->
-        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:var(--space-6);">
-          <h2 id="pacing-title" class="chart-title">Pacing 2025</h2>
-          <div style="display:flex; gap:var(--space-2);">
-            <button class="btn btn-sm btn-secondary" data-pacing-drill="month">Mês</button>
-            <button class="btn btn-sm btn-primary" data-pacing-drill="quarter">Trimestre</button>
-            <button class="btn btn-sm btn-secondary" data-pacing-drill="year">Ano</button>
+      <div id="page-pacing" style="display:none;">
+
+        <!-- Page header -->
+        <header class="topbar" role="banner">
+          <div class="topbar-left">
+            <span class="page-title" id="pacing-title" style="font-weight:700;color:var(--color-text-primary);">
+              Pacing 2026
+            </span>
           </div>
-        </div>
-        
-        <!-- Hero row: VTR | Gauge | Estimate bars -->
-        <div class="card" style="margin-bottom:var(--space-6);">
-          <div class="card-body" style="display:grid; grid-template-columns:160px 1fr 1fr; gap:var(--space-6); align-items:center; padding:var(--space-6);">
-            
-            <!-- Left KPIs -->
-            <div style="display:flex; flex-direction:column; gap:var(--space-4); border-right:1px solid var(--color-border); padding-right:var(--space-6);">
-              <div>
-                <div class="stat-label">VTR</div>
-                <div class="stat-value" id="pacing-vtr">16,02%</div>
-              </div>
-              <div>
-                <div class="stat-label">Engajamento</div>
-                <div class="stat-value" id="pacing-engagement">16,37%</div>
-              </div>
+          <div class="topbar-right">
+            <div style="display:flex;gap:var(--space-2);">
+              <button class="btn btn-sm btn-secondary" data-pacing-drill="month">Mês</button>
+              <button class="btn btn-sm btn-primary" data-pacing-drill="quarter">Trimestre</button>
+              <button class="btn btn-sm btn-secondary" data-pacing-drill="year">Ano</button>
             </div>
-            
-            <!-- Center Gauge -->
-            <div style="display:flex; flex-direction:column; align-items:center; gap:var(--space-2);">
-              <div class="stat-label">Delivery Rate</div>
-              <div style="position:relative; width:200px; height:110px;">
-                <canvas id="pacingGauge" aria-label="Delivery rate gauge"></canvas>
-                <div style="position:absolute; bottom:0; left:50%; transform:translateX(-50%); text-align:center;">
-                  <div id="pacing-gauge-value" style="font-size:24px; font-weight:700; color:var(--color-text-primary);">154,45%</div>
+          </div>
+        </header>
+
+        <div class="content-area">
+
+          <!-- HERO CARD: Gauge + Global KPIs -->
+          <div class="card" style="margin-bottom:var(--space-6);">
+            <div class="card-body" style="display:grid;grid-template-columns:180px 1fr 1fr;gap:var(--space-8);align-items:center;padding:var(--space-6);">
+
+              <!-- Global KPIs column -->
+              <div style="display:flex;flex-direction:column;gap:var(--space-5);border-right:1px solid var(--color-border);padding-right:var(--space-6);">
+                <div>
+                  <div class="stat-label">VTR Global</div>
+                  <div class="stat-value" id="pacing-vtr" style="font-size:22px;">—</div>
+                </div>
+                <div>
+                  <div class="stat-label">Engajamento Global</div>
+                  <div class="stat-value" id="pacing-engagement" style="font-size:22px;">—</div>
+                </div>
+                <div>
+                  <div class="stat-label">Delivery Rate</div>
+                  <div class="stat-value" id="pacing-gauge-value" style="font-size:22px;color:var(--color-accent);">—</div>
                 </div>
               </div>
-            </div>
-            
-            <!-- Right: Estimate bars per package -->
-            <div style="display:flex; flex-direction:column; gap:var(--space-3);">
-              <div class="stat-label">Estimate por Pacote</div>
-              <div id="pacing-bars"></div>
-            </div>
-            
-          </div>
-        </div>
-        
-        <!-- Insight Card -->
-        <div class="card" style="margin-bottom:var(--space-6);">
-          <div class="card-body" style="display:flex; gap:var(--space-4); align-items:flex-start; padding:var(--space-5);">
-            
-            <!-- Icon -->
-            <div style="width:36px; height:36px; border-radius:var(--radius-md); background:var(--color-accent-light); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-              <i data-lucide="sparkles" style="width:18px; height:18px; color:var(--color-accent);"></i>
-            </div>
-            
-            <!-- Content -->
-            <div style="flex:1;">
-              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:var(--space-2);">
-                <span style="font-size:13px; font-weight:600; color:var(--color-text-primary);">Análise de Performance</span>
-                <span class="badge badge-blue" style="font-size:10px;" id="insight-period">Trimestre atual</span>
+
+              <!-- Gauge -->
+              <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--space-2);">
+                <div class="stat-label">Delivery Rate Global</div>
+                <div style="width:220px;height:130px;position:relative;overflow:visible;">
+                  <canvas id="pacingGauge" width="220" height="130" aria-label="Delivery rate gauge"></canvas>
+                </div>
               </div>
-              <p id="insight-text" style="font-size:13px; color:var(--color-text-secondary); line-height:1.6; margin:0;">
-                O investimento acumulado até março representa <strong style="color:var(--color-text-primary);">154,45%</strong>
-                da meta esperada para o período — ritmo acima do planejado.
-                O pacote <strong style="color:var(--color-text-primary);">Football 2026 – ESPN</strong> lidera a entrega com
-                R$ 619k investidos, superando a meta em 54%.
-                <strong style="color:#F59E0B;">Atenção:</strong> o pacote
-                <strong style="color:var(--color-text-primary);">Projeto 2026 – Logan</strong> está em risco —
-                apenas 71% da meta executada até o momento.
-                Recomenda-se revisão de alocação para os próximos meses.
-              </p>
-            </div>
-            
-          </div>
-        </div>
-        
-        <!-- Trend chart -->
-        <div class="chart-container" style="margin-bottom:var(--space-6);">
-          <div class="chart-header">
-            <h3 class="card-title">Investimento real vs meta esperada</h3>
-          </div>
-          <div style="height:260px;">
-            <canvas id="pacingTrendChart" aria-label="Pacing trend chart"></canvas>
-          </div>
-        </div>
-        
-        <!-- Pacing table -->
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title">Pacotes</h3>
-          </div>
-          <div class="card-body" style="padding:0;">
-            <div class="table-container" style="border-radius:0; box-shadow:none;">
-              <table class="table">
-                <thead>
-                  <tr>
-                    <th>Pacote</th>
-                    <th>Investimento</th>
-                    <th>Meta</th>
-                    <th>Delivery Rate</th>
-                    <th>Impressões</th>
-                    <th>CTR</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody id="pacing-table-body"></tbody>
-              </table>
+
+              <!-- Estimate por pacote -->
+              <div style="border-left:1px solid var(--color-border);padding-left:var(--space-6);">
+                <div class="stat-label" style="margin-bottom:var(--space-3);">Estimate por Pacote</div>
+                <div id="pacing-bars"></div>
+              </div>
+
             </div>
           </div>
+
+          <!-- INSIGHT GLOBAL -->
+          <div class="card" id="pacing-insight-global" style="margin-bottom:var(--space-6);">
+            <div class="card-body" style="display:flex;gap:var(--space-4);align-items:flex-start;padding:var(--space-5);">
+              <div style="width:36px;height:36px;border-radius:var(--radius-md);background:var(--color-accent-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <i data-lucide="sparkles" style="width:18px;height:18px;color:var(--color-accent);"></i>
+              </div>
+              <div style="flex:1;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-2);">
+                  <span style="font-size:13px;font-weight:600;color:var(--color-text-primary);">Análise Global</span>
+                  <span class="badge badge-blue" id="insight-global-period" style="font-size:10px;">Trimestre atual</span>
+                </div>
+                <p id="pacing-insight-global-text" style="font-size:13px;color:var(--color-text-secondary);line-height:1.7;margin:0;"></p>
+              </div>
+            </div>
+          </div>
+
+          <!-- PER-CHANNEL SECTION -->
+          <div id="pacing-channels"></div>
+
+          <!-- TREND CHART -->
+          <div class="chart-container" style="margin-bottom:var(--space-6);">
+            <div class="chart-header">
+              <h3 class="card-title">Investimento real vs meta esperada</h3>
+            </div>
+            <div style="height:260px;">
+              <canvas id="pacingTrendChart" aria-label="Pacing trend chart"></canvas>
+            </div>
+          </div>
+
+          <!-- FULL TABLE -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Todos os pacotes</h3>
+            </div>
+            <div class="card-body" style="padding:0;">
+              <div class="table-container" style="border-radius:0;box-shadow:none;">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Canal</th>
+                      <th>Pacote</th>
+                      <th>Investimento</th>
+                      <th>Meta</th>
+                      <th>Delivery Rate</th>
+                      <th>Impressões</th>
+                      <th>CTR</th>
+                      <th>VTR</th>
+                      <th>Engajamento</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="pacing-table-body"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
         </div>
-        
       </div>
     </main>
   </div>

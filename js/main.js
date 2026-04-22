@@ -582,36 +582,97 @@ const PacingModule = {
 
   mockData: {
     2025: {
-      vtr: '16,02%',
-      engagement: '16,37%',
-      deliveryRate: 154.45,
-      packages: [
-        { name: 'Football 2026 – ESPN', invested: 619427, goal: 400000, impressions: 32750000, ctr: 0.30 },
-        { name: 'NBA/NBB 25/26 – ESPN', invested: 221798, goal: 300000, impressions: 9190000,  ctr: 0.46 },
-        { name: 'Projeto 2026 – Globo', invested: 210629, goal: 280000, impressions: 9340000,  ctr: 0.41 },
-        { name: 'Projeto 2026 – Logan', invested: 85189,  goal: 120000, impressions: 3220000,  ctr: 0.50 },
+      vtr: '16,02%', engagement: '16,37%', deliveryRate: 154.45,
+      channels: [
+        {
+          canal: 'ESPN',
+          vtr: '18,50%', engagement: '19,20%',
+          estimateTotal: 2400000,
+          packages: [
+            { name:'Football 2026 – ESPN',    invested:619427, goal:400000, impressions:32750000, ctr:0.30, vtr:18.5, engagement:19.2 },
+            { name:'NBA/NBB 25/26 – ESPN',    invested:221798, goal:300000, impressions:9190000,  ctr:0.46, vtr:14.2, engagement:15.8 },
+          ],
+          insight: `O canal <strong>ESPN</strong> entregou <strong>154%</strong> da meta acumulada no trimestre. O pacote <strong>Football 2026</strong> lidera com R$ 619k investidos — 54% acima da meta. <strong style="color:var(--color-warning);">Atenção:</strong> NBA/NBB está 26% abaixo da meta — revisar alocação para o próximo mês.` 
+        },
+        {
+          canal: 'Globo',
+          vtr: '12,10%', engagement: '13,40%',
+          estimateTotal: 720000,
+          packages: [
+            { name:'Projeto 2026 – Globo', invested:210629, goal:280000, impressions:9340000, ctr:0.41, vtr:12.1, engagement:13.4 },
+          ],
+          insight: `O canal <strong>Globo</strong> está em <strong>75%</strong> da meta estimada. O pacing está dentro do esperado para o período. <strong style="color:var(--color-success);">Destaque:</strong> CTR de 0,41% acima da média geral (0,32%).` 
+        },
+        {
+          canal: 'SBT',
+          vtr: '22,30%', engagement: '18,90%',
+          estimateTotal: 550000,
+          packages: [
+            { name:'UEFA – Champions League 25/26', invested:85000, goal:120000, impressions:3200000, ctr:0.71, vtr:22.3, engagement:18.9 },
+          ],
+          insight: `O canal <strong>SBT</strong> apresenta o maior CTR entre todos os canais: <strong>0,71%</strong>. Pacing em 71% da meta — ritmo dentro do esperado para o trimestre. <strong style="color:var(--color-success);">Destaque:</strong> VTR de 22,3% indica alto engajamento com o conteúdo de Champions League.` 
+        },
+        {
+          canal: 'Logan',
+          vtr: '9,80%', engagement: '8,20%',
+          estimateTotal: 280000,
+          packages: [
+            { name:'Projeto 2026 – Logan', invested:85189, goal:120000, impressions:3220000, ctr:0.50, vtr:9.8, engagement:8.2 },
+          ],
+          insight: `O canal <strong>Logan</strong> está em <strong>71%</strong> da meta. <strong style="color:var(--color-warning);">Atenção:</strong> VTR de 9,8% é o mais baixo entre todos os canais — revisar criativos de vídeo para melhorar retenção.` 
+        }
       ],
       trend: {
-        labels: ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'],
-        actual:   [619427, 841225, 926414, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        expected: [139035, 278070, 417105, 556140, 695175, 834210, 973245, 1112280, 1251315, 1390350, 1529385, 1668416]
+        labels:   ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'],
+        actual:   [619427,841225,926414,0,0,0,0,0,0,0,0,0],
+        expected: [139035,278070,417105,556140,695175,834210,973245,1112280,1251315,1390350,1529385,1668416]
       }
     },
     2026: {
-      vtr: '0,82%',
-      engagement: '0,09%',
-      deliveryRate: 156.80,
-      packages: [
-        { name: 'Football 2026 – ESPN', invested: 12530110, goal: 84400000, impressions: 84400000, ctr: 0.08 },
-        { name: 'NBA/NBB 25/26 – ESPN', invested: 10149760, goal: 88300000, impressions: 88300000, ctr: 0.02 },
-        { name: 'Projeto 2026 – Globo', invested: 576426, goal: 1100000, impressions: 1100000, ctr: 0.70 },
-        { name: 'Projeto 2026 – Logan', invested: 231715, goal: 577000, impressions: 577000, ctr: 0.58 },
-        { name: 'UEFA – Champions League 25/26 – SBT', invested: 151641, goal: 696000, impressions: 696000, ctr: 0.71 },
+      vtr: '18,50%', engagement: '19,20%', deliveryRate: 42.10,
+      channels: [
+        {
+          canal: 'ESPN',
+          vtr: '20,10%', engagement: '21,50%',
+          estimateTotal: 2800000,
+          packages: [
+            { name:'Football 2026 – ESPN',    invested:210000, goal:619427, impressions:12000000, ctr:0.28, vtr:20.1, engagement:21.5 },
+            { name:'NBA/NBB 25/26 – ESPN',    invested:80000,  goal:221798, impressions:3500000,  ctr:0.40, vtr:16.8, engagement:18.2 },
+          ],
+          insight: `O canal <strong>ESPN</strong> está em fase inicial de 2026 com <strong>42%</strong> da meta executada. O pacote <strong>Football 2026</strong> concentra 72% do investimento do canal. <strong style="color:var(--color-success);">No ritmo certo</strong> para atingir a meta anual no prazo.` 
+        },
+        {
+          canal: 'Globo',
+          vtr: '11,40%', engagement: '12,80%',
+          estimateTotal: 840000,
+          packages: [
+            { name:'Projeto 2026 – Globo', invested:70000, goal:210629, impressions:3000000, ctr:0.38, vtr:11.4, engagement:12.8 },
+          ],
+          insight: `O canal <strong>Globo</strong> está em <strong>33%</strong> da meta anual — abaixo do ritmo esperado para o trimestre (25%). <strong style="color:var(--color-warning);">Atenção:</strong> Libertadores começa em abril — espera-se aceleração natural na entrega.` 
+        },
+        {
+          canal: 'SBT',
+          vtr: '24,60%', engagement: '20,10%',
+          estimateTotal: 660000,
+          packages: [
+            { name:'UEFA – Champions League 25/26', invested:25000, goal:113004, impressions:1000000, ctr:0.71, vtr:24.6, engagement:20.1 },
+          ],
+          insight: `O canal <strong>SBT</strong> mantém o maior CTR: <strong>0,71%</strong>. Pacing em apenas <strong>22%</strong> da meta — fase de knockout da Champions em abril deve impulsionar entrega. <strong style="color:var(--color-success);">VTR de 24,6%</strong> é o melhor entre todos os canais.` 
+        },
+        {
+          canal: 'Logan',
+          vtr: '10,20%', engagement: '9,40%',
+          estimateTotal: 340000,
+          packages: [
+            { name:'Projeto 2026 – Logan', invested:25000, goal:85189, impressions:1000000, ctr:0.45, vtr:10.2, engagement:9.4 },
+          ],
+          insight: `O canal <strong>Logan</strong> está em <strong>29%</strong> da meta. Ritmo dentro do esperado para o primeiro trimestre. <strong style="color:var(--color-warning);">Monitorar:</strong> VTR de 10,2% ainda abaixo da média — ação de criativo recomendada para Q2.` 
+        }
       ],
       trend: {
-        labels: ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'],
-        actual:   [4838000, 3892000, 1859652, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        expected: [2000000, 4000000, 6000000, 8000000, 10000000, 12000000, 14000000, 16000000, 18000000, 20000000, 22000000, 23641652]
+        labels:   ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'],
+        actual:   [210000,290000,385000,0,0,0,0,0,0,0,0,0],
+        expected: [113004,226008,339012,452016,565020,678024,791028,904032,1017036,1130040,1243044,1136043]
       }
     }
   },
@@ -621,31 +682,35 @@ const PacingModule = {
   init(year) {
     this.currentYear = year;
     const data = this.mockData[year];
+
     document.getElementById('pacing-title').textContent = `Pacing ${year}`;
-    document.getElementById('pacing-vtr').textContent = data.vtr;
+    document.getElementById('pacing-vtr').textContent       = data.vtr;
     document.getElementById('pacing-engagement').textContent = data.engagement;
-    document.getElementById('pacing-gauge-value').textContent = data.deliveryRate.toFixed(2).replace('.', ',') + '%';
+    document.getElementById('pacing-gauge-value').textContent =
+      data.deliveryRate.toFixed(2).replace('.', ',') + '%';
+
     this.renderGauge(data.deliveryRate);
-    this.renderBars(data.packages);
+    this.renderBars(data.channels);
+    this.renderChannels(data.channels);
+    this.renderGlobalInsight(year);
     this.renderTrend(data.trend);
-    this.renderTable(data.packages);
-    this.updateInsight(year);
+    this.renderTable(data.channels);
+
+    lucide.createIcons();
   },
 
   renderGauge(value) {
     const ctx = document.getElementById('pacingGauge');
     if (!ctx) return;
     if (window._pacingGaugeChart) window._pacingGaugeChart.destroy();
-
-    // Color: green if >=90, yellow if >=60, red if <60
     const color = value >= 90 ? '#10B981' : value >= 60 ? '#F59E0B' : '#EF4444';
-
+    const capped = Math.min(value, 200);
     window._pacingGaugeChart = new Chart(ctx, {
       type: 'doughnut',
       data: {
         datasets: [{
-          data: [Math.min(value, 200), Math.max(0, 200 - Math.min(value, 200))],
-          backgroundColor: [color, '#F3F4F6'],
+          data: [capped, Math.max(0, 200 - capped)],
+          backgroundColor: [color, 'rgba(156,163,175,0.15)'],
           borderWidth: 0,
           circumference: 180,
           rotation: 270
@@ -653,29 +718,181 @@ const PacingModule = {
       },
       options: {
         responsive: false,
-        cutout: '75%',
-        plugins: { legend: { display: false }, tooltip: { enabled: false } }
+        cutout: '72%',
+        plugins: { legend: { display: false }, tooltip: { enabled: false } },
+        animation: { duration: 600 }
       }
     });
   },
 
-  renderBars(packages) {
+  renderBars(channels) {
     const container = document.getElementById('pacing-bars');
     if (!container) return;
-    container.innerHTML = packages.map(pkg => {
-      const pct = Math.min((pkg.invested / pkg.goal) * 100, 100).toFixed(0);
+    container.innerHTML = channels.map(ch => {
+      const totalInvested = ch.packages.reduce((s, p) => s + p.invested, 0);
+      const totalGoal     = ch.packages.reduce((s, p) => s + p.goal, 0);
+      const pct = Math.min((totalInvested / totalGoal) * 100, 100).toFixed(0);
       const color = pct >= 90 ? '#10B981' : pct >= 60 ? '#F59E0B' : '#EF4444';
+      const estFmt = ch.estimateTotal >= 1000000
+        ? (ch.estimateTotal / 1000000).toFixed(1) + 'Mi'
+        : (ch.estimateTotal / 1000).toFixed(0) + 'k';
       return `
         <div style="margin-bottom:10px;">
-          <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--color-text-secondary); margin-bottom:4px;">
-            <span>${pkg.name}</span>
-            <span style="font-weight:600; color:var(--color-text-primary);">${pct}%</span>
+          <div style="display:flex;justify-content:space-between;
+            font-size:11px;color:var(--color-text-secondary);margin-bottom:3px;">
+            <span style="font-weight:500;color:var(--color-text-primary);">
+              ${ch.canal}
+            </span>
+            <span>
+              <span style="font-weight:600;color:var(--color-text-primary);">
+                ${pct}%
+              </span>
+              <span style="color:var(--color-text-muted);margin-left:4px;">
+                est. ${estFmt}
+              </span>
+            </span>
           </div>
-          <div style="height:6px; background:#F3F4F6; border-radius:999px; overflow:hidden;">
-            <div style="height:100%; width:${pct}%; background:${color}; border-radius:999px; transition:width 0.4s ease;"></div>
+          <div style="height:5px;background:rgba(156,163,175,0.15);
+            border-radius:999px;overflow:hidden;">
+            <div style="height:100%;width:${pct}%;background:${color};
+              border-radius:999px;transition:width 0.5s ease;"></div>
           </div>
         </div>`;
     }).join('');
+  },
+
+  renderChannels(channels) {
+    const container = document.getElementById('pacing-channels');
+    if (!container) return;
+    container.innerHTML = '';
+
+    channels.forEach(ch => {
+      const totalInvested = ch.packages.reduce((s, p) => s + p.invested, 0);
+      const totalGoal     = ch.packages.reduce((s, p) => s + p.goal, 0);
+      const deliveryRate  = ((totalInvested / totalGoal) * 100).toFixed(1);
+      const estFmt = ch.estimateTotal >= 1000000
+        ? (ch.estimateTotal / 1000000).toFixed(1) + 'Mi'
+        : (ch.estimateTotal / 1000).toFixed(0) + 'k';
+      const drColor = deliveryRate >= 90 ? 'var(--color-success)'
+                    : deliveryRate >= 60 ? 'var(--color-warning)'
+                    : 'var(--color-danger)';
+
+      const section = document.createElement('div');
+      section.style.marginBottom = 'var(--space-6)';
+      section.innerHTML = `
+        <!-- Channel header -->
+        <div style="display:flex;align-items:center;gap:var(--space-3);
+          margin-bottom:var(--space-3);">
+          <h3 style="font-size:14px;font-weight:600;
+            color:var(--color-text-primary);margin:0;">${ch.canal}</h3>
+          <div style="display:flex;gap:var(--space-3);">
+            <span style="font-size:11px;color:var(--color-text-muted);">
+              VTR <strong style="color:var(--color-text-primary);">
+                ${ch.vtr}
+              </strong>
+            </span>
+            <span style="font-size:11px;color:var(--color-text-muted);">
+              Engajamento <strong style="color:var(--color-text-primary);">
+                ${ch.engagement}
+              </strong>
+            </span>
+            <span style="font-size:11px;color:var(--color-text-muted);">
+              Estimate <strong style="color:var(--color-text-primary);">
+                ${estFmt}
+              </strong>
+            </span>
+            <span style="font-size:11px;color:var(--color-text-muted);">
+              Delivery <strong style="color:${drColor};">
+                ${deliveryRate}%
+              </strong>
+            </span>
+          </div>
+        </div>
+
+        <!-- Package rows -->
+        <div class="card" style="margin-bottom:var(--space-3);">
+          <div class="card-body" style="padding:0;">
+            <table class="table" style="font-size:12px;">
+              <thead>
+                <tr>
+                  <th>Pacote</th>
+                  <th>Investimento</th>
+                  <th>Meta</th>
+                  <th>Delivery</th>
+                  <th>Impressões</th>
+                  <th>CTR</th>
+                  <th>VTR</th>
+                  <th>Engajamento</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${ch.packages.map(pkg => {
+                  const rate = ((pkg.invested / pkg.goal) * 100).toFixed(1);
+                  const status = rate >= 90 ? 'On Track'
+                               : rate >= 60 ? 'Em risco' : 'Atrasado';
+                  const badgeClass = rate >= 90 ? 'badge-green'
+                                   : rate >= 60 ? '' : '';
+                  const badgeStyle = rate >= 90
+                    ? 'background:var(--color-success-light);color:var(--color-success);'
+                    : rate >= 60
+                    ? 'background:var(--color-warning-light);color:var(--color-warning);'
+                    : 'background:var(--color-danger-light);color:var(--color-danger);';
+                  return `<tr>
+                    <td><strong>${pkg.name}</strong></td>
+                    <td>R$ ${pkg.invested.toLocaleString('pt-BR')}</td>
+                    <td>R$ ${pkg.goal.toLocaleString('pt-BR')}</td>
+                    <td style="font-weight:600;">${rate}%</td>
+                    <td>${(pkg.impressions/1000000).toFixed(2)}M</td>
+                    <td>${pkg.ctr}%</td>
+                    <td>${pkg.vtr}%</td>
+                    <td>${pkg.engagement}%</td>
+                    <td>
+                      <span class="badge" style="${badgeStyle}padding:3px 8px;
+                        border-radius:var(--radius-sm);">
+                        ${status}
+                      </span>
+                    </td>
+                  </tr>`;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Channel insight -->
+        <div class="card" style="margin-bottom:var(--space-2);">
+          <div class="card-body" style="display:flex;gap:var(--space-3);
+            align-items:flex-start;padding:var(--space-4);">
+            <div style="width:30px;height:30px;border-radius:var(--radius-md);
+              background:var(--color-accent-light);display:flex;
+              align-items:center;justify-content:center;flex-shrink:0;">
+              <i data-lucide="sparkles"
+                style="width:14px;height:14px;
+                color:var(--color-accent);"></i>
+            </div>
+            <div>
+              <div style="font-size:12px;font-weight:600;
+                color:var(--color-text-primary);margin-bottom:4px;">
+                Análise — ${ch.canal}
+              </div>
+              <p style="font-size:12px;color:var(--color-text-secondary);
+                line-height:1.6;margin:0;">${ch.insight}</p>
+            </div>
+          </div>
+        </div>`;
+
+      container.appendChild(section);
+    });
+  },
+
+  renderGlobalInsight(year) {
+    const insights = {
+      2025: `O investimento acumulado representa <strong style="color:var(--color-text-primary);">154,45%</strong> da meta esperada — ritmo acima do planejado em todos os canais. <strong>ESPN</strong> lidera com R$ 841k investidos. <strong style="color:var(--color-warning);">Atenção:</strong> NBA/NBB e Logan estão abaixo da meta — revisão de alocação recomendada para os próximos meses.`,
+      2026: `O investimento em 2026 está em fase inicial com <strong style="color:var(--color-text-primary);">42,10%</strong> da meta anual executada. <strong>SBT</strong> apresenta o maior CTR geral (0,71%) e o maior VTR (24,6%). <strong style="color:var(--color-warning);">Monitorar:</strong> Globo e Logan estão abaixo do ritmo esperado para o Q1 — aceleração prevista com o início da Libertadores e Champions em abril.` 
+    };
+    const el = document.getElementById('pacing-insight-global-text');
+    if (el) el.innerHTML = insights[year] || '';
   },
 
   renderTrend(trend) {
@@ -692,102 +909,76 @@ const PacingModule = {
             data: trend.actual,
             borderColor: '#2563EB',
             backgroundColor: 'rgba(37,99,235,0.08)',
-            borderWidth: 2,
-            fill: true,
-            tension: 0.4,
-            pointRadius: 4,
-            pointBackgroundColor: '#2563EB',
-            pointBorderColor: '#fff',
-            pointBorderWidth: 2,
+            borderWidth: 2, fill: true, tension: 0.4,
+            pointRadius: 4, pointBackgroundColor: '#2563EB',
+            pointBorderColor: '#fff', pointBorderWidth: 2,
             spanGaps: false
           },
           {
             label: 'Meta esperada',
             data: trend.expected,
-            borderColor: '#9CA3AF',
-            borderWidth: 2,
-            borderDash: [6, 4],
-            fill: false,
-            tension: 0,
+            borderColor: '#9CA3AF', borderWidth: 2,
+            borderDash: [6, 4], fill: false, tension: 0,
             pointRadius: 0
           }
         ]
       },
       options: {
-        responsive: true,
-        maintainAspectRatio: false,
+        responsive: true, maintainAspectRatio: false,
         plugins: {
           legend: {
-            display: true,
-            position: 'top',
-            align: 'end',
-            labels: { usePointStyle: true, pointStyle: 'circle', padding: 16, font: { size: 11 } }
+            display: true, position: 'top', align: 'end',
+            labels: { usePointStyle: true, pointStyle: 'circle',
+              padding: 16, font: { size: 11 } }
           },
           tooltip: {
             backgroundColor: '#1A1D2E',
             callbacks: {
-              label: ctx => ` R$ ${ctx.parsed.y.toLocaleString('pt-BR')}` 
+              label: c => ` R$ ${c.parsed.y.toLocaleString('pt-BR')}` 
             }
           }
         },
         scales: {
-          x: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#9CA3AF' } },
-          y: {
-            border: { display: false },
-            grid: { color: '#F3F4F6' },
-            ticks: {
-              font: { size: 11 }, color: '#9CA3AF',
-              callback: v => 'R$ ' + (v/1000).toFixed(0) + 'k'
-            }
-          }
+          x: { grid: { display: false },
+               ticks: { font: { size: 11 }, color: '#9CA3AF' } },
+          y: { border: { display: false }, grid: { color: '#F3F4F6' },
+               ticks: { font: { size: 11 }, color: '#9CA3AF',
+                 callback: v => 'R$ ' + (v/1000).toFixed(0) + 'k' } }
         }
       }
     });
   },
 
-  renderTable(packages) {
+  renderTable(channels) {
     const tbody = document.getElementById('pacing-table-body');
     if (!tbody) return;
-    const rows = packages.map(pkg => {
-      const rate = ((pkg.invested / pkg.goal) * 100).toFixed(1);
-      const status = rate >= 90 ? 'On Track' : rate >= 60 ? 'Em risco' : 'Atrasado';
-      const badgeColor = rate >= 90 ? 'badge-green' : rate >= 60 ? 'badge-yellow' : 'badge-red';
-      return `<tr>
-        <td><strong>${pkg.name}</strong></td>
-        <td>R$ ${pkg.invested.toLocaleString('pt-BR')}</td>
-        <td>R$ ${pkg.goal.toLocaleString('pt-BR')}</td>
-        <td>${rate}%</td>
-        <td>${(pkg.impressions/1000000).toFixed(2)}M</td>
-        <td>${pkg.ctr}%</td>
-        <td><span class="badge ${badgeColor}">${status}</span></td>
-      </tr>`;
-    }).join('');
-    tbody.innerHTML = rows;
-  },
-
-  updateInsight(year) {
-    const insights = {
-      2025: `O investimento acumulado até março representa <strong style="color:var(--color-text-primary);">154,45%</strong>
-        da meta esperada para o período — ritmo acima do planejado.
-        O pacote <strong style="color:var(--color-text-primary);">Football 2026 – ESPN</strong> lidera a entrega com
-        R$ 619k investidos, superando a meta em 54%.
-        <strong style="color:#F59E0B;">Atenção:</strong> o pacote
-        <strong style="color:var(--color-text-primary);">Projeto 2026 – Logan</strong> está em risco —
-        apenas 71% da meta executada. Recomenda-se revisão de alocação para os próximos meses.`,
-
-      2026: `O investimento total em 2026 representa <strong style="color:var(--color-text-primary);">R$ 23,6 milhões</strong>
-        acumulados até o momento — delivery rate de 156,80% acima do planejado.
-        O pacote <strong style="color:var(--color-text-primary);">Football 2026 – ESPN</strong> lidera com
-        R$ 12,5 milhões investidos e 84,4M impressões.
-        <strong style="color:#10B981;">Destaque:</strong> o pacote
-        <strong style="color:var(--color-text-primary);">UEFA – Champions League 25/26 – SBT</strong> apresenta
-        o maior CTR (0,71%) entre todos os pacotes.
-        <strong style="color:#F59E0B;">Atenção:</strong> NBA/NBB 25/26 – ESPN tem o menor CTR (0,02%) —
-        recomenda-se revisão de criativos para otimização de performance.`
-    };
-
-    const el = document.getElementById('insight-text');
-    if (el) el.innerHTML = insights[year];
+    tbody.innerHTML = channels.flatMap(ch =>
+      ch.packages.map(pkg => {
+        const rate = ((pkg.invested / pkg.goal) * 100).toFixed(1);
+        const status = rate >= 90 ? 'On Track'
+                     : rate >= 60 ? 'Em risco' : 'Atrasado';
+        const badgeStyle = rate >= 90
+          ? 'background:var(--color-success-light);color:var(--color-success);'
+          : rate >= 60
+          ? 'background:var(--color-warning-light);color:var(--color-warning);'
+          : 'background:var(--color-danger-light);color:var(--color-danger);';
+        return `<tr>
+          <td>${ch.canal}</td>
+          <td><strong>${pkg.name}</strong></td>
+          <td>R$ ${pkg.invested.toLocaleString('pt-BR')}</td>
+          <td>R$ ${pkg.goal.toLocaleString('pt-BR')}</td>
+          <td style="font-weight:600;">${rate}%</td>
+          <td>${(pkg.impressions/1000000).toFixed(2)}M</td>
+          <td>${pkg.ctr}%</td>
+          <td>${pkg.vtr}%</td>
+          <td>${pkg.engagement}%</td>
+          <td>
+            <span class="badge" style="${badgeStyle}padding:3px 8px;
+              border-radius:var(--radius-sm);">${status}</span>
+          </td>
+        </tr>`;
+      })
+    ).join('');
   }
 };
 
