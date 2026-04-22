@@ -947,3 +947,13 @@
   border-color: var(--color-accent);
   color: var(--color-accent);
 }
+
+/* Logo theme switching */
+.logo-dark { display: block; }
+.logo-light { display: none; }
+
+[data-theme="dark"] .logo-dark { display: block; }
+[data-theme="dark"] .logo-light { display: none; }
+
+:root:not([data-theme="dark"]) .logo-dark { display: none; }
+:root:not([data-theme="dark"]) .logo-light { display: block; }
