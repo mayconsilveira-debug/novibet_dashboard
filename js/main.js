@@ -18,6 +18,7 @@ class Dashboard {
     this.initModal();
     this.initToast();
     this.initSearch();
+    this.initDrillButtons();
     
     // Initialize charts after a short delay to ensure Chart.js is loaded
     setTimeout(() => {
@@ -69,25 +70,51 @@ class Dashboard {
     if (!window.dashboardCharts) return;
     
     const metrics = ['impressions', 'clicks', 'ctr', 'views'];
-    const newData = window.dashboardCharts.generateSampleData();
+    const metricLabels = ['Impressões', 'Cliques', 'CTR', 'Visualizações Completas'];
+    const metric = metrics[metricIndex];
     
-    // Modify data based on metric type
-    switch (metricIndex) {
-      case 0: // Impressions
-        newData.values = newData.values.map(v => v * 5);
-        break;
-      case 1: // Clicks
-        newData.values = newData.values.map(v => v * 0.1);
-        break;
-      case 2: // CTR
-        newData.values = newData.values.map(() => Math.random() * 2 + 0.5);
-        break;
-      case 3: // Views
-        newData.values = newData.values.map(v => v * 0.8);
-        break;
+    // Update chart data and color
+    window.dashboardCharts.updateChartForMetric(metric);
+    
+    // Update chart title
+    const titleEl = document.querySelector('.chart-title');
+    if (titleEl) {
+      titleEl.textContent = metricLabels[metricIndex];
     }
+  }
+  
+  /**
+   * Initialize drill buttons (Ano/Mês/Semana)
+   */
+  initDrillButtons() {
+    const buttons = document.querySelectorAll('.chart-header button');
+    const drillMap = ['ano', 'mes', 'semana'];
     
-    window.dashboardCharts.updateChartData(newData);
+    buttons.forEach((btn, index) => {
+      if (index >= 3) return; // Only first 3 buttons
+      
+      btn.addEventListener('click', () => {
+        // Update button styles
+        buttons.forEach((b, i) => {
+          if (i >= 3) return;
+          b.classList.remove('btn-primary');
+          b.classList.add('btn-secondary');
+        });
+        btn.classList.remove('btn-secondary');
+        btn.classList.add('btn-primary');
+        
+        // Update chart
+        if (window.dashboardCharts) {
+          window.dashboardCharts.updateChartForDrill(drillMap[index]);
+        }
+      });
+    });
+    
+    // Set initial active state (Mês is default)
+    if (buttons[1]) {
+      buttons[1].classList.remove('btn-secondary');
+      buttons[1].classList.add('btn-primary');
+    }
   }
   
   /**
