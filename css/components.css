@@ -408,19 +408,30 @@
 
 /* Year Filter Buttons */
 .year-btn {
-  padding: 6px 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 16px;
   border-radius: 20px;
   border: 1px solid #ddd;
   background: white;
   cursor: pointer;
   font-weight: 500;
+  font-size: 13px;
   color: #555;
   transition: all 200ms ease;
 }
-.year-btn.active {
-  background: var(--color-accent);
-  color: white;
+.year-btn:hover {
   border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+.year-btn.active {
+  background: var(--color-accent) !important;
+  color: white !important;
+  border-color: var(--color-accent) !important;
+}
+.year-btn.active:hover {
+  background: var(--color-accent-dark) !important;
 }
 
 .btn-icon {
