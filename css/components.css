@@ -949,11 +949,11 @@
 }
 
 /* Logo theme switching */
-.logo-dark { display: block; }
-.logo-light { display: none; }
+.logo-dark { display: none; }
+.logo-light { display: block; }
 
-[data-theme="dark"] .logo-dark { display: block; }
-[data-theme="dark"] .logo-light { display: none; }
+[data-theme="dark"] .logo-dark { display: none; }
+[data-theme="dark"] .logo-light { display: block; }
 
-:root:not([data-theme="dark"]) .logo-dark { display: none; }
-:root:not([data-theme="dark"]) .logo-light { display: block; }
+:root:not([data-theme="dark"]) .logo-dark { display: block; }
+:root:not([data-theme="dark"]) .logo-light { display: none; }
