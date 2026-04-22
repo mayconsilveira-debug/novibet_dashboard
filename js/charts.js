@@ -423,5 +423,3 @@ class DashboardCharts {
 document.addEventListener('DOMContentLoaded', () => {
   window.dashboardCharts = new DashboardCharts();
 });
-
-export default DashboardCharts;

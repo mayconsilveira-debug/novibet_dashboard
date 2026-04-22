@@ -797,5 +797,3 @@ window.PacingModule = PacingModule;
 document.addEventListener('DOMContentLoaded', () => {
   window.dashboard = new Dashboard();
 });
-
-export default Dashboard;
