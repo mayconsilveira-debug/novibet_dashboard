@@ -9,7 +9,10 @@ class Dashboard {
     this.statCards = [];
     this.expandedRows = new Set();
     this.currentDrillLevel = 'package';
-    this.packageData = [
+    this.currentYear = 2026;
+    
+    // 2026 Data
+    this.packageData2026 = [
       { name: 'Football 2026 – ESPN', investimento: 619427, impressions: 32750000, clicks: 98234, ctr: 0.30, views: 6200000,
         children: [
           { name: 'Pre-roll 30s', investimento: 310000, impressions: 18000000, clicks: 52000, ctr: 0.29, views: 4100000 },
@@ -20,16 +23,44 @@ class Dashboard {
       { name: 'Projeto 2026 – Globo', investimento: 210629, impressions: 9340000, clicks: 38700, ctr: 0.41, views: 2200000, children: [] },
       { name: 'Projeto 2026 – Logan', investimento: 85189, impressions: 3220000, clicks: 15987, ctr: 0.50, views: 800000, children: [] }
     ];
-    this.channelData = [
+    this.channelData2026 = [
       { name: 'ESPN', investimento: 841225, impressions: 41940000, clicks: 140334, ctr: 0.33, views: 9000000, children: [] },
       { name: 'Globo', investimento: 210629, impressions: 9340000, clicks: 38700, ctr: 0.41, views: 2200000, children: [] },
       { name: 'Logan', investimento: 85189, impressions: 3220000, clicks: 15987, ctr: 0.50, views: 800000, children: [] }
     ];
-    this.formatData = [
+    this.formatData2026 = [
       { name: 'Digital', investimento: 1012000, impressions: 58600000, clicks: 187800, ctr: 0.32, views: 11600000, children: [] },
       { name: 'Display', investimento: 420000, impressions: 1500000, clicks: 5200, ctr: 0.35, views: 300000, children: [] },
       { name: 'Vídeo', investimento: 236416, impressions: 740000, clicks: 2021, ctr: 0.27, views: 100000, children: [] }
     ];
+    
+    // 2025 Data
+    this.packageData2025 = [
+      { name: 'Football 2025 – ESPN', investimento: 545000, impressions: 28500000, clicks: 87500, ctr: 0.31, views: 5400000,
+        children: [
+          { name: 'Pre-roll 30s', investimento: 275000, impressions: 15500000, clicks: 46500, ctr: 0.30, views: 3500000 },
+          { name: 'Display Masthead', investimento: 270000, impressions: 13000000, clicks: 41000, ctr: 0.32, views: 1900000 }
+        ]
+      },
+      { name: 'NBA/NBB 24/25 – ESPN', investimento: 198000, impressions: 8200000, clicks: 38200, ctr: 0.47, views: 2500000, children: [] },
+      { name: 'Projeto 2025 – Globo', investimento: 185000, impressions: 8600000, clicks: 35200, ctr: 0.41, views: 2000000, children: [] },
+      { name: 'Projeto 2025 – Logan', investimento: 72000, impressions: 2800000, clicks: 14200, ctr: 0.51, views: 700000, children: [] }
+    ];
+    this.channelData2025 = [
+      { name: 'ESPN', investimento: 743000, impressions: 36700000, clicks: 125700, ctr: 0.34, views: 7900000, children: [] },
+      { name: 'Globo', investimento: 185000, impressions: 8600000, clicks: 35200, ctr: 0.41, views: 2000000, children: [] },
+      { name: 'Logan', investimento: 72000, impressions: 2800000, clicks: 14200, ctr: 0.51, views: 700000, children: [] }
+    ];
+    this.formatData2025 = [
+      { name: 'Digital', investimento: 890000, impressions: 51200000, clicks: 167500, ctr: 0.33, views: 10200000, children: [] },
+      { name: 'Display', investimento: 380000, impressions: 1350000, clicks: 4800, ctr: 0.36, views: 280000, children: [] },
+      { name: 'Vídeo', investimento: 210000, impressions: 650000, clicks: 1800, ctr: 0.28, views: 85000, children: [] }
+    ];
+    
+    // Set current data based on year
+    this.packageData = this.packageData2026;
+    this.channelData = this.channelData2026;
+    this.formatData = this.formatData2026;
     this.tableData = this.packageData;
     
     this.init();
@@ -39,6 +70,7 @@ class Dashboard {
     this.initStatCards();
     this.initTable();
     this.initTableDrillButtons();
+    this.initYearFilter();
     this.initModal();
     this.initToast();
     this.initSearch();
@@ -254,6 +286,58 @@ class Dashboard {
     drillButtons.package?.addEventListener('click', () => setActive('package'));
     drillButtons.channel?.addEventListener('click', () => setActive('channel'));
     drillButtons.format?.addEventListener('click', () => setActive('format'));
+  }
+  
+  /**
+   * Initialize year filter buttons (2025/2026)
+   */
+  initYearFilter() {
+    const btn2025 = document.getElementById('year-2025');
+    const btn2026 = document.getElementById('year-2026');
+    
+    const setYear = (year) => {
+      this.currentYear = year;
+      this.expandedRows.clear();
+      
+      // Update button styles
+      if (year === 2025) {
+        btn2025?.classList.remove('btn-secondary');
+        btn2025?.classList.add('btn-primary');
+        btn2026?.classList.remove('btn-primary');
+        btn2026?.classList.add('btn-secondary');
+      } else {
+        btn2026?.classList.remove('btn-secondary');
+        btn2026?.classList.add('btn-primary');
+        btn2025?.classList.remove('btn-primary');
+        btn2025?.classList.add('btn-secondary');
+      }
+      
+      // Update data references
+      this.packageData = year === 2025 ? this.packageData2025 : this.packageData2026;
+      this.channelData = year === 2025 ? this.channelData2025 : this.channelData2026;
+      this.formatData = year === 2025 ? this.formatData2025 : this.formatData2026;
+      
+      // Update current table data based on drill level
+      if (this.currentDrillLevel === 'package') this.tableData = this.packageData;
+      else if (this.currentDrillLevel === 'channel') this.tableData = this.channelData;
+      else if (this.currentDrillLevel === 'format') this.tableData = this.formatData;
+      
+      // Re-render table
+      const searchInput = document.getElementById('table-search');
+      if (searchInput && searchInput.value) {
+        this.filterTable(searchInput.value.toLowerCase());
+      } else {
+        this.renderTable();
+      }
+      
+      // Update mini charts with year data
+      if (window.dashboardCharts) {
+        window.dashboardCharts.updateMiniChartsForYear(year);
+      }
+    };
+    
+    btn2025?.addEventListener('click', () => setYear(2025));
+    btn2026?.addEventListener('click', () => setYear(2026));
   }
   
   /**

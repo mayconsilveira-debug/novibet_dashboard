@@ -289,6 +289,46 @@ class DashboardCharts {
   }
   
   /**
+   * Update mini charts data based on selected year
+   */
+  updateMiniChartsForYear(year) {
+    // Update investChart
+    const investChart = Chart.getChart('investChart');
+    if (investChart) {
+      if (year === 2025) {
+        investChart.data.datasets[0].data = [485000, 198000, 72000];
+      } else {
+        investChart.data.datasets[0].data = [619427, 221798, 85189];
+      }
+      investChart.update();
+    }
+    
+    // Update formatChart
+    const formatChart = Chart.getChart('formatChart');
+    if (formatChart) {
+      if (year === 2025) {
+        formatChart.data.datasets[0].data = [94.5, 3.8, 1.7];
+        document.querySelector('#formatChartCenter div:last-child').textContent = '94.5%';
+      } else {
+        formatChart.data.datasets[0].data = [96.24, 2.5, 1.26];
+        document.querySelector('#formatChartCenter div:last-child').textContent = '96%';
+      }
+      formatChart.update();
+    }
+    
+    // Update channelChart
+    const channelChart = Chart.getChart('channelChart');
+    if (channelChart) {
+      if (year === 2025) {
+        channelChart.data.datasets[0].data = [4.8, 3.2, 1.5, 1.0];
+      } else {
+        channelChart.data.datasets[0].data = [5.2, 3.8, 1.8, 1.2];
+      }
+      channelChart.update();
+    }
+  }
+  
+  /**
    * Create a mini doughnut chart
    */
   createDoughnutChart(canvasId, data, labels) {
