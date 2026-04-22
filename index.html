@@ -158,6 +158,42 @@
           </div>
         </div>
         
+        <!-- Mini Charts Section -->
+        <div class="grid grid-cols-3" style="margin-bottom: var(--space-6);">
+
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title" data-pt="Investimento / Mês" data-en="Investment / Month">Investimento / Mês</h3>
+            </div>
+            <div class="card-body" style="height: 140px;">
+              <canvas id="investChart" aria-label="Investment per month"></canvas>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title" data-pt="Clicks por Formato" data-en="Clicks by Format">Clicks por Formato</h3>
+            </div>
+            <div class="card-body" style="height: 140px; position: relative;">
+              <canvas id="formatChart" aria-label="Clicks by format"></canvas>
+              <div id="formatChartCenter" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;">
+                <div style="font-size:11px;color:var(--color-text-muted)">Digital</div>
+                <div style="font-size:16px;font-weight:600;color:var(--color-text-primary)">96%</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title" data-pt="Views por Canal" data-en="Views by Channel">Views por Canal</h3>
+            </div>
+            <div class="card-body" style="height: 140px;">
+              <canvas id="channelChart" aria-label="Complete views by channel"></canvas>
+            </div>
+          </div>
+
+        </div>
+        
         <!-- Table Section -->
         <div class="card">
           <div class="card-header" style="display: flex; align-items: center; justify-content: space-between;">

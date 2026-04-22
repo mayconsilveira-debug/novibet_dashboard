@@ -24,6 +24,7 @@ class Dashboard {
     setTimeout(() => {
       if (window.dashboardCharts) {
         window.dashboardCharts.initMainChart('mainChart');
+        window.dashboardCharts.initMiniCharts();
       }
     }, 100);
   }

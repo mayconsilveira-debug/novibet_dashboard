@@ -192,6 +192,103 @@ class DashboardCharts {
   }
   
   /**
+   * Initialize mini charts (investChart, formatChart, channelChart)
+   */
+  initMiniCharts() {
+    // a) investChart — vertical bar chart
+    const investCtx = document.getElementById('investChart');
+    if (investCtx) {
+      new Chart(investCtx, {
+        type: 'bar',
+        data: {
+          labels: ['Jan', 'Fev', 'Mar'],
+          datasets: [{
+            data: [619427, 221798, 85189],
+            backgroundColor: ['#2563EB', '#2563EB', 'rgba(37, 99, 235, 0.25)'],
+            borderRadius: 6,
+            borderSkipped: false
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { 
+              grid: { display: false },
+              ticks: { font: { size: 11 } }
+            },
+            y: { display: false }
+          }
+        }
+      });
+    }
+    
+    // b) formatChart — doughnut chart with center text
+    const formatCtx = document.getElementById('formatChart');
+    if (formatCtx) {
+      new Chart(formatCtx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Digital', 'Display', 'Vídeo'],
+          datasets: [{
+            data: [96.24, 2.5, 1.26],
+            backgroundColor: ['#2563EB', '#7C6FF7', '#E5E7EB'],
+            borderWidth: 0,
+            hoverOffset: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '72%',
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (context) => ` ${context.parsed}%`
+              }
+            }
+          }
+        }
+      });
+    }
+    
+    // c) channelChart — horizontal bar chart
+    const channelCtx = document.getElementById('channelChart');
+    if (channelCtx) {
+      new Chart(channelCtx, {
+        type: 'bar',
+        data: {
+          labels: ['ESPN', 'Globo', 'Logan', 'SporTV'],
+          datasets: [{
+            data: [5.2, 3.8, 1.8, 1.2],
+            backgroundColor: '#059669',
+            borderRadius: 6,
+            borderSkipped: false
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { 
+              grid: { display: false },
+              ticks: { font: { size: 11 } }
+            },
+            y: { 
+              grid: { display: false },
+              ticks: { font: { size: 11 } }
+            }
+          }
+        }
+      });
+    }
+  }
+  
+  /**
    * Create a mini doughnut chart
    */
   createDoughnutChart(canvasId, data, labels) {
