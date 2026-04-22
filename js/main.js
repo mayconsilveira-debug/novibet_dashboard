@@ -598,19 +598,20 @@ const PacingModule = {
       }
     },
     2026: {
-      vtr: '18,50%',
-      engagement: '19,20%',
-      deliveryRate: 42.10,
+      vtr: '0,82%',
+      engagement: '0,09%',
+      deliveryRate: 156.80,
       packages: [
-        { name: 'Football 2026 – ESPN', invested: 210000, goal: 619427, impressions: 12000000, ctr: 0.28 },
-        { name: 'NBA/NBB 25/26 – ESPN', invested: 80000,  goal: 221798, impressions: 3500000,  ctr: 0.40 },
-        { name: 'Projeto 2026 – Globo', invested: 70000,  goal: 210629, impressions: 3000000,  ctr: 0.38 },
-        { name: 'Projeto 2026 – Logan', invested: 25000,  goal: 85189,  impressions: 1000000,  ctr: 0.45 },
+        { name: 'Football 2026 – ESPN', invested: 12530110, goal: 84400000, impressions: 84400000, ctr: 0.08 },
+        { name: 'NBA/NBB 25/26 – ESPN', invested: 10149760, goal: 88300000, impressions: 88300000, ctr: 0.02 },
+        { name: 'Projeto 2026 – Globo', invested: 576426, goal: 1100000, impressions: 1100000, ctr: 0.70 },
+        { name: 'Projeto 2026 – Logan', invested: 231715, goal: 577000, impressions: 577000, ctr: 0.58 },
+        { name: 'UEFA – Champions League 25/26 – SBT', invested: 151641, goal: 696000, impressions: 696000, ctr: 0.71 },
       ],
       trend: {
         labels: ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'],
-        actual:   [210000, 290000, 385000, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        expected: [113004, 226008, 339012, 452016, 565020, 678024, 791028, 904032, 1017036, 1130040, 1243044, 1136043]
+        actual:   [4838000, 3892000, 1859652, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        expected: [2000000, 4000000, 6000000, 8000000, 10000000, 12000000, 14000000, 16000000, 18000000, 20000000, 22000000, 23641652]
       }
     }
   },
@@ -774,14 +775,15 @@ const PacingModule = {
         <strong style="color:var(--color-text-primary);">Projeto 2026 – Logan</strong> está em risco —
         apenas 71% da meta executada. Recomenda-se revisão de alocação para os próximos meses.`,
 
-      2026: `O investimento em 2026 está em fase inicial com <strong style="color:var(--color-text-primary);">42,10%</strong>
-        da meta anual executada até março — ritmo dentro do esperado para o primeiro trimestre.
-        O pacote <strong style="color:var(--color-text-primary);">Football 2026 – ESPN</strong> concentra
-        54% do investimento total realizado.
-        <strong style="color:#10B981;">Destaque positivo:</strong> o pacote
-        <strong style="color:var(--color-text-primary);">Projeto 2026 – Logan</strong> apresenta
-        o maior CTR entre os pacotes (0,45%).
-        Monitorar aceleração de entrega a partir de abril para manter o pacing no prazo.`
+      2026: `O investimento total em 2026 representa <strong style="color:var(--color-text-primary);">R$ 23,6 milhões</strong>
+        acumulados até o momento — delivery rate de 156,80% acima do planejado.
+        O pacote <strong style="color:var(--color-text-primary);">Football 2026 – ESPN</strong> lidera com
+        R$ 12,5 milhões investidos e 84,4M impressões.
+        <strong style="color:#10B981;">Destaque:</strong> o pacote
+        <strong style="color:var(--color-text-primary);">UEFA – Champions League 25/26 – SBT</strong> apresenta
+        o maior CTR (0,71%) entre todos os pacotes.
+        <strong style="color:#F59E0B;">Atenção:</strong> NBA/NBB 25/26 – ESPN tem o menor CTR (0,02%) —
+        recomenda-se revisão de criativos para otimização de performance.`
     };
 
     const el = document.getElementById('insight-text');
