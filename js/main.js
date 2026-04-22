@@ -292,52 +292,42 @@ class Dashboard {
    * Initialize year filter buttons (2025/2026)
    */
   initYearFilter() {
-    const btn2025 = document.getElementById('year-2025');
-    const btn2026 = document.getElementById('year-2026');
-    
-    const setYear = (year) => {
-      this.currentYear = year;
-      this.expandedRows.clear();
-      
-      // Update button styles
-      if (year === 2025) {
-        btn2025?.classList.remove('btn-secondary');
-        btn2025?.classList.add('btn-primary');
-        btn2026?.classList.remove('btn-primary');
-        btn2026?.classList.add('btn-secondary');
-      } else {
-        btn2026?.classList.remove('btn-secondary');
-        btn2026?.classList.add('btn-primary');
-        btn2025?.classList.remove('btn-primary');
-        btn2025?.classList.add('btn-secondary');
-      }
-      
-      // Update data references
-      this.packageData = year === 2025 ? this.packageData2025 : this.packageData2026;
-      this.channelData = year === 2025 ? this.channelData2025 : this.channelData2026;
-      this.formatData = year === 2025 ? this.formatData2025 : this.formatData2026;
-      
-      // Update current table data based on drill level
-      if (this.currentDrillLevel === 'package') this.tableData = this.packageData;
-      else if (this.currentDrillLevel === 'channel') this.tableData = this.channelData;
-      else if (this.currentDrillLevel === 'format') this.tableData = this.formatData;
-      
-      // Re-render table
-      const searchInput = document.getElementById('table-search');
-      if (searchInput && searchInput.value) {
-        this.filterTable(searchInput.value.toLowerCase());
-      } else {
-        this.renderTable();
-      }
-      
-      // Update mini charts with year data
-      if (window.dashboardCharts) {
-        window.dashboardCharts.updateMiniChartsForYear(year);
-      }
-    };
-    
-    btn2025?.addEventListener('click', () => setYear(2025));
-    btn2026?.addEventListener('click', () => setYear(2026));
+    document.querySelectorAll('.year-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const year = parseInt(btn.dataset.year);
+        this.currentYear = year;
+        this.expandedRows.clear();
+        
+        // Toggle active class
+        document.querySelectorAll('.year-btn').forEach(b => b.classList.remove('btn-primary'));
+        document.querySelectorAll('.year-btn').forEach(b => b.classList.add('btn-secondary'));
+        btn.classList.remove('btn-secondary');
+        btn.classList.add('btn-primary');
+        
+        // Update data references
+        this.packageData = year === 2025 ? this.packageData2025 : this.packageData2026;
+        this.channelData = year === 2025 ? this.channelData2025 : this.channelData2026;
+        this.formatData = year === 2025 ? this.formatData2025 : this.formatData2026;
+        
+        // Update current table data based on drill level
+        if (this.currentDrillLevel === 'package') this.tableData = this.packageData;
+        else if (this.currentDrillLevel === 'channel') this.tableData = this.channelData;
+        else if (this.currentDrillLevel === 'format') this.tableData = this.formatData;
+        
+        // Re-render table
+        const searchInput = document.getElementById('table-search');
+        if (searchInput && searchInput.value) {
+          this.filterTable(searchInput.value.toLowerCase());
+        } else {
+          this.renderTable();
+        }
+        
+        // Update mini charts with year data
+        if (window.dashboardCharts) {
+          window.dashboardCharts.updateMiniChartsForYear(year);
+        }
+      });
+    });
   }
   
   /**
