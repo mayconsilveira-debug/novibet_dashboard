@@ -418,9 +418,9 @@
   transition: all 200ms ease;
 }
 .year-btn.active {
-  background: var(--color-primary);
+  background: var(--color-accent);
   color: white;
-  border-color: var(--color-primary);
+  border-color: var(--color-accent);
 }
 
 .btn-icon {
