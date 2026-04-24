@@ -16,7 +16,19 @@ document.addEventListener('DOMContentLoaded', () => {
     if (pacing) pacing.style.display = 'none';
 
     const target = document.getElementById(pageId);
-    if (target) target.style.display = 'block';
+    // Pacing wraps its own topbar + content-area, so it must be a flex
+    // column so the inner .content-area can scroll. Overview (itself a
+    // .content-area) just needs block display.
+    if (target) {
+      target.style.display = (pageId === 'page-pacing') ? 'flex' : 'block';
+    }
+
+    // The global topbar (date range + year filter) only makes sense on the
+    // Overview; hide it on Pacing, which has its own header.
+    const globalTopbar = document.getElementById('topbar-overview');
+    if (globalTopbar) {
+      globalTopbar.style.display = (pageId === 'page-overview') ? '' : 'none';
+    }
   }
 
   document.querySelectorAll('.nav-item[data-page]').forEach(link => {

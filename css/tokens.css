@@ -135,8 +135,10 @@
   --color-surface: #1F3240;
   --color-surface-elevated: #243848;
   --color-text-primary: #F0EEF8;
-  --color-text-secondary: #8BA5B0;
-  --color-text-muted: #6B8A99;
+  /* Lifted from #8BA5B0 / #6B8A99 — previous values were too dim against the
+     blue-black surface and made labels / muted text hard to read. */
+  --color-text-secondary: #C5D4DB;
+  --color-text-muted: #9FB5BE;
   --color-accent: #A89CF7;
   --color-accent-light: rgba(168,156,247,0.12);
   --color-accent-dark: #6355E5;

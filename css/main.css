@@ -15,6 +15,7 @@ html {
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  height: 100%;
 }
 
 body {
@@ -23,7 +24,10 @@ body {
   line-height: var(--leading-normal);
   color: var(--color-text-primary);
   background-color: var(--color-bg);
-  min-height: 100vh;
+  /* Clamp to viewport so only .content-area produces a scrollbar — avoids the
+     double scroll (body + content) that otherwise stacks on the right edge. */
+  height: 100%;
+  overflow: hidden;
 }
 
 /* Typography */
@@ -60,7 +64,8 @@ a:hover {
 /* Layout Structure */
 .app-container {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
 
 /* Main Content Area */

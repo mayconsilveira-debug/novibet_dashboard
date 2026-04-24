@@ -16,6 +16,9 @@
   
   <!-- Lucide Icons CDN -->
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <!-- Supabase JS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
   <!-- Stylesheets -->
   <link rel="stylesheet" href="css/tokens.css">
@@ -26,21 +29,52 @@
   <div class="app-container">
     <!-- Sidebar -->
     <aside id="sidebar" class="sidebar" role="navigation" aria-label="Main navigation">
-      <!-- Hamburger Toggle -->
-      <button 
-        id="sidebar-toggle"
-        class="sidebar-hamburger" 
-        aria-label="Toggle sidebar" 
-        aria-expanded="true"
-        title="Toggle sidebar"
-      >
-        <i data-lucide="menu" style="width: 20px; height: 20px;"></i>
-      </button>
-      
+      <!-- Sidebar top row: hamburger on the left, credit block on the right.
+           Sharing a single row gives the credit enough horizontal space for a
+           two-line label + logo without forcing the text to wrap mid-phrase. -->
+      <div class="sidebar-top-row">
+        <button
+          id="sidebar-toggle"
+          class="sidebar-hamburger"
+          aria-label="Toggle sidebar"
+          aria-expanded="true"
+          title="Toggle sidebar"
+        >
+          <i data-lucide="menu" style="width: 20px; height: 20px;"></i>
+        </button>
+
+        <div class="sidebar-credit">
+          <div class="sidebar-credit-text">
+            <span class="sidebar-credit-eyebrow" data-pt="Criado por" data-en="Created by">Criado por</span>
+            <span class="sidebar-credit-title" data-pt="Business Intelligence" data-en="Business Intelligence">Business Intelligence</span>
+          </div>
+          <img src="LogoWe.png" alt="We" class="sidebar-credit-logo logo-dark">
+          <img src="LogoWEBranco.png" alt="We" class="sidebar-credit-logo logo-light">
+        </div>
+      </div>
+
       <div class="sidebar-header">
         <span class="sidebar-logo">Dashboard</span>
       </div>
-      
+
+      <!-- Quick settings (language + theme) — hidden when sidebar is collapsed -->
+      <div class="sidebar-settings">
+        <div class="sidebar-settings-row">
+          <span class="sidebar-settings-label" data-pt="Idioma" data-en="Language">Idioma</span>
+          <div class="lang-switcher" role="group" aria-label="Language">
+            <button onclick="setLang('pt')" data-lang-btn="pt" class="lang-pill active" aria-pressed="true">PT</button>
+            <button onclick="setLang('en')" data-lang-btn="en" class="lang-pill" aria-pressed="false">EN</button>
+          </div>
+        </div>
+        <div class="sidebar-settings-row">
+          <span class="sidebar-settings-label" data-pt="Tema" data-en="Theme">Tema</span>
+          <button class="theme-toggle" aria-label="Toggle theme">
+            <i data-lucide="moon" class="theme-toggle-icon" style="width:14px;height:14px;"></i>
+            <span class="theme-toggle-label">Light</span>
+          </button>
+        </div>
+      </div>
+
       <nav class="sidebar-nav">
         <div class="nav-section">
           <span class="nav-label" data-pt="Relatórios" data-en="Reports">Relatórios</span>
@@ -68,29 +102,18 @@
         </div>
       </nav>
       
-      <!-- Language Toggle at bottom -->
-      <div class="sidebar-footer">
-        <button onclick="setLang('pt')" id="btn-pt" class="lang-btn active">PT Português</button>
-        <button onclick="setLang('en')" id="btn-en" class="lang-btn">EN Inglês</button>
-      </div>
     </aside>
     
     <!-- Main Content -->
     <main class="main-content">
-      <!-- TopBar -->
-      <header class="topbar" role="banner">
+      <!-- TopBar (Overview only) -->
+      <header class="topbar" role="banner" id="topbar-overview">
         <div class="topbar-left">
-          <img src="Logo Novibet.png" alt="Novibet" class="logo-dark" style="height: 32px; width: auto;">
-          <img src="Logo Novibet branco.png" alt="Novibet" class="logo-light" style="height: 32px; width: auto;">
+          <img src="Logo Novibet.png" alt="Novibet" class="logo-dark" style="height: 24px; width: auto;">
+          <img src="Logo Novibet branco.png" alt="Novibet" class="logo-light" style="height: 24px; width: auto;">
         </div>
         
         <div class="topbar-right">
-          <!-- Theme Toggle -->
-          <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
-            <i data-lucide="moon" id="theme-icon" style="width:14px;height:14px;"></i>
-            <span id="theme-label">Light</span>
-          </button>
-
           <!-- Date Range Filter -->
           <div class="date-range" style="display: flex; align-items: center; gap: var(--space-2);">
             <span class="date-label" data-pt="De" data-en="From">De</span>
@@ -102,7 +125,7 @@
           <!-- Year Filter -->
           <div style="display: flex; align-items: center; gap: var(--space-1); margin-left: var(--space-2);">
             <button class="year-btn" data-year="2025">2025</button>
-            <button class="year-btn active" data-year="2026">2026</button>
+            <button class="year-btn" data-year="2026">2026</button>
           </div>
           
         </div>
@@ -110,6 +133,15 @@
       
       <!-- Dashboard Content -->
       <div class="content-area" id="page-overview">
+
+        <!-- Active cross-filters strip. Populated by Dashboard.renderActiveFilters();
+             the .is-empty class hides it when no filter is active. -->
+        <div id="active-filters-bar" class="active-filters-bar is-empty" aria-live="polite">
+          <span class="active-filters-label" data-pt="Filtrado por" data-en="Filtered by">Filtrado por</span>
+          <div id="active-filters-list" class="active-filters-list"></div>
+          <button id="clear-all-filters" class="btn btn-sm btn-secondary" type="button" data-pt="Limpar" data-en="Clear">Limpar</button>
+        </div>
+
         <!-- Stat Cards -->
         <div class="grid grid-cols-4 mb-4" style="margin-bottom: var(--space-6);">
           <div class="stat-card" role="button" tabindex="0" aria-label="Impressions: 60.8 Million, up 12%" data-metric="impressions">
@@ -164,27 +196,18 @@
           </div>
         </div>
         
-        <!-- Mini Charts Section -->
-        <div class="grid grid-cols-3" style="margin-bottom: var(--space-6);">
-
-          <div class="card">
-            <div class="card-header">
-              <h3 class="card-title" data-pt="Investimento / Mês" data-en="Investment / Month">Investimento / Mês</h3>
-            </div>
-            <div class="card-body" style="height: 140px;">
-              <canvas id="investChart" aria-label="Investment per month"></canvas>
-            </div>
-          </div>
+        <!-- Row 1: Formato (donut) + Canal (horizontal bars) -->
+        <div class="grid grid-cols-2" style="margin-bottom: var(--space-6);">
 
           <div class="card">
             <div class="card-header">
               <h3 class="card-title" data-pt="Clicks por Formato" data-en="Clicks by Format">Clicks por Formato</h3>
             </div>
-            <div class="card-body" style="height: 140px; position: relative;">
+            <div class="card-body" style="height: 320px; position: relative;">
               <canvas id="formatChart" aria-label="Clicks by format"></canvas>
-              <div id="formatChartCenter" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;">
-                <div style="font-size:11px;color:var(--color-text-muted)">Digital</div>
-                <div style="font-size:16px;font-weight:600;color:var(--color-text-primary)">96%</div>
+              <div id="formatChartCenter" style="position:absolute;top:50%;left:50%;transform:translate(-50%,calc(-50% - 14px));text-align:center;pointer-events:none;">
+                <div style="font-size:11px;color:var(--color-text-muted)">—</div>
+                <div style="font-size:16px;font-weight:600;color:var(--color-text-primary)">—</div>
               </div>
             </div>
           </div>
@@ -193,8 +216,20 @@
             <div class="card-header">
               <h3 class="card-title" data-pt="Views por Canal" data-en="Views by Channel">Views por Canal</h3>
             </div>
-            <div class="card-body" style="height: 140px;">
+            <div class="card-body" style="height: 320px;">
               <canvas id="channelChart" aria-label="Complete views by channel"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 2: Investimento / Mês (full width) -->
+        <div style="margin-bottom: var(--space-6);">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title" data-pt="Investimento / Mês" data-en="Investment / Month">Investimento / Mês</h3>
+            </div>
+            <div class="card-body" style="height: 280px;">
+              <canvas id="investChart" aria-label="Investment per month"></canvas>
             </div>
           </div>
 
@@ -216,10 +251,17 @@
                 aria-label="Search table"
               >
             </div>
-            <div style="display:flex;gap:var(--space-2);">
-              <button class="btn btn-sm btn-primary" id="drill-package" data-pt="Pacote" data-en="Package">Pacote</button>
-              <button class="btn btn-sm btn-secondary" id="drill-channel" data-pt="Canal" data-en="Channel">Canal</button>
-              <button class="btn btn-sm btn-secondary" id="drill-format" data-pt="Formato" data-en="Format">Formato</button>
+            <div class="table-drill-group" role="group" aria-label="Agrupar por">
+              <span class="table-drill-label" data-pt="Agrupar por" data-en="Group by">Agrupar por</span>
+              <div class="table-drill-buttons">
+                <button class="btn btn-sm btn-secondary" data-drill-dim="canal"     data-pt="Canal"     data-en="Channel">Canal</button>
+                <button class="btn btn-sm btn-primary"   data-drill-dim="grupo"     data-pt="Grupo"     data-en="Group">Grupo</button>
+                <button class="btn btn-sm btn-secondary" data-drill-dim="formato"   data-pt="Formato"   data-en="Format">Formato</button>
+                <button class="btn btn-sm btn-secondary" data-drill-dim="categoria" data-pt="Categoria" data-en="Category">Categoria</button>
+                <button class="btn btn-sm btn-secondary" data-drill-dim="pacote"    data-pt="Pacote"    data-en="Package">Pacote</button>
+                <button class="btn btn-sm btn-secondary" data-drill-dim="pedido"    data-pt="Pedido"    data-en="Order">Pedido</button>
+              </div>
+              <div class="table-drill-path" id="table-drill-path" aria-live="polite"></div>
             </div>
           </div>
           
@@ -229,7 +271,7 @@
                 <thead>
                   <tr>
                     <th data-sort="name" scope="col">
-                      <span id="drill-col-label" data-pt="Pacote" data-en="Package">Pacote</span> <span class="table-sort-icon"></span>
+                      <span id="drill-col-label" data-pt="Grupo" data-en="Group">Grupo</span> <span class="table-sort-icon"></span>
                     </th>
                     <th data-sort="investimento" scope="col">
                       <span data-pt="Investimento" data-en="Investment">Investimento</span> <span class="table-sort-icon"></span>
@@ -270,108 +312,41 @@
           </div>
           <div class="topbar-right">
             <div style="display:flex;gap:var(--space-2);">
-              <button class="btn btn-sm btn-secondary" data-pacing-drill="month">Mês</button>
-              <button class="btn btn-sm btn-primary" data-pacing-drill="quarter">Trimestre</button>
-              <button class="btn btn-sm btn-secondary" data-pacing-drill="year">Ano</button>
+              <button class="btn btn-sm btn-secondary" data-pacing-drill="month" data-pt="Mês" data-en="Month">Mês</button>
+              <button class="btn btn-sm btn-secondary" data-pacing-drill="quarter" data-pt="Trimestre" data-en="Quarter">Trimestre</button>
+              <button class="btn btn-sm btn-primary" data-pacing-drill="year" data-pt="Ano" data-en="Year">Ano</button>
             </div>
           </div>
         </header>
 
         <div class="content-area">
 
-          <!-- HERO CARD: Gauge + Global KPIs -->
-          <div class="card" style="margin-bottom:var(--space-6);">
-            <div class="card-body" style="display:grid;grid-template-columns:180px 1fr 1fr;gap:var(--space-8);align-items:center;padding:var(--space-6);">
-
-              <!-- Global KPIs column -->
-              <div style="display:flex;flex-direction:column;gap:var(--space-5);border-right:1px solid var(--color-border);padding-right:var(--space-6);">
-                <div>
-                  <div class="stat-label">VTR Global</div>
-                  <div class="stat-value" id="pacing-vtr" style="font-size:22px;">—</div>
-                </div>
-                <div>
-                  <div class="stat-label">Engajamento Global</div>
-                  <div class="stat-value" id="pacing-engagement" style="font-size:22px;">—</div>
-                </div>
-                <div>
-                  <div class="stat-label">Delivery Rate</div>
-                  <div class="stat-value" id="pacing-gauge-value" style="font-size:22px;color:var(--color-accent);">—</div>
-                </div>
-              </div>
-
-              <!-- Gauge -->
-              <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--space-2);">
-                <div class="stat-label">Delivery Rate Global</div>
-                <div style="width:220px;height:130px;position:relative;overflow:visible;">
-                  <canvas id="pacingGauge" width="220" height="130" aria-label="Delivery rate gauge"></canvas>
-                </div>
-              </div>
-
-              <!-- Estimate por pacote -->
-              <div style="border-left:1px solid var(--color-border);padding-left:var(--space-6);">
-                <div class="stat-label" style="margin-bottom:var(--space-3);">Estimate por Pacote</div>
-                <div id="pacing-bars"></div>
-              </div>
-
-            </div>
-          </div>
-
-          <!-- INSIGHT GLOBAL -->
-          <div class="card" id="pacing-insight-global" style="margin-bottom:var(--space-6);">
-            <div class="card-body" style="display:flex;gap:var(--space-4);align-items:flex-start;padding:var(--space-5);">
-              <div style="width:36px;height:36px;border-radius:var(--radius-md);background:var(--color-accent-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                <i data-lucide="sparkles" style="width:18px;height:18px;color:var(--color-accent);"></i>
-              </div>
-              <div style="flex:1;">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-2);">
-                  <span style="font-size:13px;font-weight:600;color:var(--color-text-primary);">Análise Global</span>
-                  <span class="badge badge-blue" id="insight-global-period" style="font-size:10px;">Trimestre atual</span>
-                </div>
-                <p id="pacing-insight-global-text" style="font-size:13px;color:var(--color-text-secondary);line-height:1.7;margin:0;"></p>
-              </div>
-            </div>
-          </div>
-
-          <!-- PER-CHANNEL SECTION -->
-          <div id="pacing-channels"></div>
-
-          <!-- TREND CHART -->
+          <!-- TREND CHART (top of the page) -->
           <div class="chart-container" style="margin-bottom:var(--space-6);">
             <div class="chart-header">
-              <h3 class="card-title">Investimento real vs meta esperada</h3>
+              <h3 class="card-title" data-pt="Impressões acumuladas — real vs meta" data-en="Accumulated impressions — actual vs goal">Impressões acumuladas — real vs meta</h3>
+              <div class="pacing-totals" aria-live="polite">
+                <div class="pacing-total pacing-total-actual">
+                  <span class="pacing-total-label" data-pt="Realizado total" data-en="Total actual">Realizado total</span>
+                  <span class="pacing-total-value" id="pacing-actual-total-value">—</span>
+                </div>
+                <div class="pacing-total pacing-total-expected">
+                  <span class="pacing-total-label" data-pt="Meta esperada total" data-en="Total expected goal">Meta esperada total</span>
+                  <span class="pacing-total-value" id="pacing-meta-total-value">—</span>
+                </div>
+                <div class="pacing-total pacing-total-delta">
+                  <span class="pacing-total-label" data-pt="% da meta" data-en="% of goal">% da meta</span>
+                  <span class="pacing-total-value" id="pacing-delta-value">—</span>
+                </div>
+              </div>
             </div>
             <div style="height:260px;">
               <canvas id="pacingTrendChart" aria-label="Pacing trend chart"></canvas>
             </div>
           </div>
 
-          <!-- FULL TABLE -->
-          <div class="card">
-            <div class="card-header">
-              <h3 class="card-title">Todos os pacotes</h3>
-            </div>
-            <div class="card-body" style="padding:0;">
-              <div class="table-container" style="border-radius:0;box-shadow:none;">
-                <table class="table">
-                  <thead>
-                    <tr>
-                      <th>Canal</th>
-                      <th>Pacote</th>
-                      <th>Investimento</th>
-                      <th>Meta</th>
-                      <th>Delivery Rate</th>
-                      <th>Impressões</th>
-                      <th>CTR</th>
-                      <th>VTR</th>
-                      <th>Engajamento</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody id="pacing-table-body"></tbody>
-                </table>
-              </div>
-            </div>
-          </div>
+          <!-- PER-GROUP KPI CARDS -->
+          <div id="pacing-channel-cards" style="margin-bottom:var(--space-6);"></div>
 
         </div>
       </div>
@@ -434,6 +409,8 @@
   </div>
   
   <!-- Scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/data.js"></script>
   <script src="js/language.js"></script>
   <script src="js/charts.js"></script>
   <script src="js/main.js"></script>

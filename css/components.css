@@ -55,9 +55,17 @@
   display: none;
 }
 
+/* Top row of the sidebar: hamburger + credit block sharing a single row so
+   the credit has the whole width (minus hamburger) to lay out its eyebrow
+   label, the BI line, and the We logo without wrapping. */
+.sidebar-top-row {
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid var(--color-border);
+}
+
 .sidebar-hamburger {
-  width: 56px;
-  height: 56px;
+  width: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -65,8 +73,143 @@
   background: transparent;
   color: var(--color-text-secondary);
   cursor: pointer;
-  border-bottom: 1px solid var(--color-border);
   transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+/* Pacing page wrapper: topbar (fixed) stacked over a scrollable content-area.
+   Only applies when sidebar.js toggles this element to display:flex. */
+#page-pacing {
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Cross-filter chips strip. Shown above the stat cards when any cross-filter
+   is active (click on chart slice, channel bar, or a top-level table row). */
+.active-filters-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  padding: 8px var(--space-3);
+  background: var(--color-bg-subtle, rgba(148,163,184,0.08));
+  border-radius: var(--radius-md);
+  border: 1px dashed var(--color-border);
+  flex-wrap: wrap;
+}
+.active-filters-bar.is-empty {
+  display: none;
+}
+.active-filters-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+.active-filters-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  flex: 1;
+}
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 4px 3px 10px;
+  background: var(--color-accent-light, rgba(124,58,237,0.12));
+  color: var(--color-text-primary);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.filter-chip-dim {
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+.filter-chip-value {
+  font-weight: 600;
+}
+.filter-chip-remove {
+  width: 18px;
+  height: 18px;
+  border: none;
+  background: rgba(0,0,0,0.08);
+  color: var(--color-text-primary);
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+.filter-chip-remove:hover {
+  background: rgba(0,0,0,0.18);
+}
+[data-theme="dark"] .filter-chip-remove {
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+}
+[data-theme="dark"] .filter-chip-remove:hover {
+  background: rgba(255,255,255,0.22);
+}
+.table tr[data-filter-row="1"]:hover {
+  background: var(--color-bg-subtle, rgba(148,163,184,0.08));
+}
+
+/* Credit strip in the sidebar top row — eyebrow label + BI line on the left,
+   We logo centered vertically on the right. Hidden when the sidebar is
+   collapsed (no room). */
+.sidebar-credit {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: 8px 12px;
+  flex: 1;
+  min-width: 0;
+}
+.sidebar-credit-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  line-height: 1.15;
+}
+.sidebar-credit-eyebrow {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+.sidebar-credit-title {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+[data-theme="dark"] .sidebar-credit-eyebrow,
+[data-theme="dark"] .sidebar-credit-title {
+  color: #ffffff;
+}
+.sidebar-credit-logo {
+  height: 24px;
+  width: auto;
+  flex-shrink: 0;
+}
+#sidebar.collapsed .sidebar-credit {
+  display: none;
+}
+#sidebar.collapsed .sidebar-top-row {
+  justify-content: center;
 }
 
 .sidebar-hamburger:hover {
@@ -171,6 +314,33 @@
 #sidebar.collapsed .nav-item .nav-text {
   display: none;
 }
+
+/* Sidebar Settings — quick language + theme controls under the logo */
+.sidebar-settings {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.sidebar-settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.sidebar-settings-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+#sidebar.collapsed .sidebar-settings { display: none; }
 
 /* Sidebar Footer - Language Toggle */
 .sidebar-footer {
@@ -404,6 +574,339 @@
 .btn-lg {
   padding: var(--space-3) var(--space-6);
   font-size: var(--text-body);
+}
+
+/* Pacing — per-channel cards (horizontal, full-width, stacked) */
+.pacing-channel-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* Comparative totals strip in the Pacing trend chart header. One pill per
+   metric — actual delivered, expected goal, and % of goal — so users can
+   read the comparison at a glance without hovering the line chart. */
+.pacing-totals {
+  display: inline-flex;
+  align-items: stretch;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+.pacing-total {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-subtle, rgba(148,163,184,0.12));
+  min-width: 90px;
+}
+.pacing-total-label {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  font-weight: 500;
+  letter-spacing: 0.2px;
+  text-transform: uppercase;
+}
+.pacing-total-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+/* Colored left accent matching each line in the chart legend so users can
+   map the number back to its series. */
+.pacing-total-actual   { box-shadow: inset 3px 0 0 #2563EB; }
+.pacing-total-expected { box-shadow: inset 3px 0 0 #9CA3AF; }
+.pacing-total-delta    { box-shadow: inset 3px 0 0 var(--color-accent, #7C3AED); }
+
+.pacing-channel-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.pacing-channel-card .pc-body {
+  display: grid;
+  grid-template-columns: 140px 110px 130px 220px 1fr;
+  align-items: center;
+  gap: var(--space-5);
+  padding: var(--space-5);
+}
+@media (max-width: 1100px) {
+  .pacing-channel-card .pc-body {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+  }
+}
+
+.pacing-channel-card .pc-name {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.pacing-channel-card .pc-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-left: var(--space-4);
+  border-left: 1px solid var(--color-border);
+}
+.pacing-channel-card .pc-kpi-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  line-height: 1;
+}
+.pacing-channel-card .pc-kpi-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+}
+
+.pacing-channel-card .pc-gauge {
+  position: relative;
+  width: 200px;
+  height: 140px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 2px;
+}
+.pacing-channel-card .pc-gauge-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  margin-bottom: 8px;
+}
+.pacing-channel-card .pc-gauge canvas {
+  display: block;
+  margin: 0 auto;
+}
+.pacing-channel-card .pc-gauge-value {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  text-align: center;
+  line-height: 1;
+}
+
+.pacing-channel-card .pc-estimate {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+.pacing-channel-card .pc-estimate-header .pc-estimate-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+}
+.pacing-channel-card .pc-estimate-header .pc-estimate-total {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  line-height: 1.1;
+}
+.pacing-channel-card .pc-estimate-items {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.pacing-channel-card .pc-estimate-item {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 10px;
+  background: var(--color-surface-alt, rgba(156, 163, 175, 0.1));
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  overflow: hidden;
+}
+.pacing-channel-card .pc-estimate-item .pc-estimate-item-fill {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  background: var(--color-accent-light);
+  z-index: 0;
+}
+.pacing-channel-card .pc-estimate-item .pc-estimate-item-name,
+.pacing-channel-card .pc-estimate-item .pc-estimate-item-value {
+  position: relative;
+  z-index: 1;
+}
+.pacing-channel-card .pc-estimate-item .pc-estimate-item-name {
+  color: var(--color-text-primary);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding-right: 8px;
+}
+.pacing-channel-card .pc-estimate-item .pc-estimate-item-value {
+  color: var(--color-text-primary);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.pacing-channel-card .pc-footer {
+  padding: var(--space-3) var(--space-5);
+  border-top: 1px solid var(--color-border);
+  background: rgba(124, 111, 247, 0.04);
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+}
+.pacing-channel-card .pc-footer .pc-insight-icon {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: var(--radius-md);
+  background: var(--color-accent-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pacing-channel-card .pc-footer .pc-insight-icon i {
+  width: 14px;
+  height: 14px;
+  color: var(--color-accent);
+}
+.pacing-channel-card .pc-footer .pc-insight-text {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.pacing-channel-card .pc-footer .pc-insight-line {
+  /* Each analysis (pacing / VTR / engagement) lives on its own row. */
+}
+
+/* Overview table drill group (Agrupar por) */
+.table-drill-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+.table-drill-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+.table-drill-buttons {
+  display: flex;
+  gap: var(--space-1);
+  flex-wrap: wrap;
+}
+
+/* Breadcrumb showing the ordered drill path */
+.table-drill-path {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-wrap: wrap;
+  width: 100%;
+  margin-top: var(--space-2);
+}
+.table-drill-path:empty { display: none; }
+.drill-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
+  background: var(--color-accent-light);
+  color: var(--color-accent);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.drill-chip-remove {
+  background: transparent;
+  border: none;
+  color: inherit;
+  font-size: 16px;
+  line-height: 1;
+  padding: 0 0 0 4px;
+  cursor: pointer;
+  opacity: 0.7;
+}
+.drill-chip-remove:hover { opacity: 1; }
+.drill-sep {
+  color: var(--color-text-muted);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Hierarchical table row adornments */
+.drill-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0 6px 0 0;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+.drill-toggle-spacer {
+  display: inline-block;
+  width: 18px;
+}
+.child-row td:first-child {
+  color: var(--color-text-secondary);
+}
+.child-row.depth-1 { background: rgba(124, 111, 247, 0.04); }
+.child-row.depth-2 { background: rgba(124, 111, 247, 0.07); }
+.child-row.depth-3 { background: rgba(124, 111, 247, 0.10); }
+.child-row.depth-4 { background: rgba(124, 111, 247, 0.13); }
+.child-row.depth-5 { background: rgba(124, 111, 247, 0.16); }
+
+/* Language Switcher (topbar) */
+.lang-switcher {
+  display: inline-flex;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: white;
+  overflow: hidden;
+  padding: 2px;
+  gap: 2px;
+}
+.lang-pill {
+  padding: 4px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 999px;
+  font-family: var(--font-family);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 150ms ease;
+  min-width: 36px;
+}
+.lang-pill:hover {
+  color: var(--color-accent);
+}
+.lang-pill.active {
+  background: var(--color-accent);
+  color: white;
 }
 
 /* Year Filter Buttons */
