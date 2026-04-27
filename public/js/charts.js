@@ -11,10 +11,12 @@ function _pluginTextColor() {
     : '#374151';
 }
 
-// Custom Chart.js plugin: draws floating labels ("Name 35%") just outside each
-// doughnut slice, no callout lines. Text anchor/baseline adapt to the slice's
-// angle so labels sit naturally around the donut; same-side labels are nudged
-// vertically only when they'd collide, never repositioned into columns.
+// Custom Chart.js plugin: each slice gets an "abs (pct%)" label outside the
+// donut connected by a 2-segment leader line — short radial out from the arc
+// edge, then a horizontal elbow to where the label sits. Same-side labels
+// are forced to a 16px minimum vertical gap so adjacent small slices don't
+// pile up. Slices below 3% drop to a smaller font so they fit alongside the
+// larger labels.
 const doughnutCallouts = {
   id: 'doughnutCallouts',
   afterDatasetsDraw(chart) {
@@ -30,60 +32,89 @@ const doughnutCallouts = {
 
     const cx = (chartArea.left + chartArea.right) / 2;
     const cy = (chartArea.top + chartArea.bottom) / 2;
-    const gap = 10; // distance from the arc's outer edge to the label anchor
+
+    // Geometry per slice: anchor on arc edge, a radial bend a few pixels out,
+    // and an initial elbow y at the natural radial projection (we'll adjust
+    // it with the collision pass below).
+    const radialOffset = 6;     // length of the first (radial) leader segment
+    const elbowOffset  = 14;    // horizontal distance from donut to label x
 
     const slices = meta.data.map((arc, i) => {
       const value = dataArr[i];
       if (!value || value <= 0) return null;
-      const mid = (arc.startAngle + arc.endAngle) / 2;
-      const outer = arc.outerRadius;
+      const mid  = (arc.startAngle + arc.endAngle) / 2;
       const cosA = Math.cos(mid);
       const sinA = Math.sin(mid);
+      const outer = arc.outerRadius;
       return {
         i,
         value,
         pct: (value / total) * 100,
         label: labels[i] || '',
-        mid,
         cosA,
         sinA,
-        x: cx + cosA * (outer + gap),
-        y: cy + sinA * (outer + gap),
+        outer,
+        anchorX: cx + cosA * outer,
+        anchorY: cy + sinA * outer,
+        radialX: cx + cosA * (outer + radialOffset),
+        radialY: cy + sinA * (outer + radialOffset),
+        // initial label y = a touch further out radially; collision pass below
+        // adjusts this without changing the anchor / radial points.
+        y: cy + sinA * (outer + elbowOffset),
         isRight: cosA >= 0
       };
     }).filter(Boolean);
 
     if (!slices.length) return;
 
-    // Mild anti-overlap: nudge same-side labels by minGap if they'd collide.
-    // No column alignment — labels stay close to their slices.
-    const minGap = 13;
-    const nudge = (list) => {
+    // Distribute labels on each side enforcing a minimum vertical gap. Two
+    // passes (top-down + bottom-up) cover both ends without compressing back
+    // into a stack.
+    const minGap = 16;
+    const top    = chartArea.top + 4;
+    const bottom = chartArea.bottom - 4;
+    const distribute = (list) => {
+      if (list.length === 0) return;
       list.sort((a, b) => a.y - b.y);
+      list.forEach(s => { s.y = Math.max(top, Math.min(bottom, s.y)); });
       for (let i = 1; i < list.length; i++) {
         const floor = list[i - 1].y + minGap;
         if (list[i].y < floor) list[i].y = floor;
       }
+      for (let i = list.length - 2; i >= 0; i--) {
+        const ceil = list[i + 1].y - minGap;
+        if (list[i].y > ceil) list[i].y = ceil;
+      }
     };
-    nudge(slices.filter(s => !s.isRight));
-    nudge(slices.filter(s =>  s.isRight));
+    distribute(slices.filter(s => !s.isRight));
+    distribute(slices.filter(s =>  s.isRight));
 
     ctx.save();
-    ctx.font = '11px "Plus Jakarta Sans", system-ui, sans-serif';
-    ctx.fillStyle = _pluginTextColor();
+    ctx.lineWidth = 0.8;
+    ctx.strokeStyle = 'rgba(156,163,175,0.7)';
+    ctx.textBaseline = 'middle';
 
     slices.forEach(s => {
-      // Horizontal alignment: text flows outward from the slice.
-      ctx.textAlign = s.isRight ? 'left' : 'right';
-      // Vertical baseline: for top slices the label sits above; for bottom
-      // slices it sits below; otherwise vertically centred on the anchor.
-      if (s.sinA < -0.55)       ctx.textBaseline = 'bottom';
-      else if (s.sinA >  0.55)  ctx.textBaseline = 'top';
-      else                      ctx.textBaseline = 'middle';
+      const elbowX = cx + (s.isRight ? 1 : -1) * (s.outer + elbowOffset);
+      const elbowY = s.y;
 
-      const abs = Math.round(s.value).toLocaleString('pt-BR');
+      // Leader: arc edge → radial bend → elbow at the (possibly nudged) y.
+      ctx.beginPath();
+      ctx.moveTo(s.anchorX, s.anchorY);
+      ctx.lineTo(s.radialX, s.radialY);
+      ctx.lineTo(elbowX, elbowY);
+      ctx.stroke();
+
+      // Smaller font for tiny slices so they don't crowd larger labels.
+      const fontSize = s.pct < 3 ? 10 : 11;
+      ctx.font = `${fontSize}px "Plus Jakarta Sans", system-ui, sans-serif`;
+      ctx.fillStyle = _pluginTextColor();
+      ctx.textAlign = s.isRight ? 'left' : 'right';
+
+      const abs  = Math.round(s.value).toLocaleString('pt-BR');
       const text = `${abs} (${s.pct.toFixed(0)}%)`;
-      ctx.fillText(text, s.x, s.y);
+      const labelPad = 4;
+      ctx.fillText(text, elbowX + (s.isRight ? labelPad : -labelPad), elbowY);
     });
 
     ctx.restore();

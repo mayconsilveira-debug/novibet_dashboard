@@ -5,6 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Modern SaaS Dashboard - Pure HTML, CSS, and JavaScript">
   <title>Dashboard | Vanilla SaaS</title>
+
+  <!-- Auth gate: bounce to the login page before any other asset loads if the
+       session flag isn't set. login.html flips the flag in localStorage when
+       the user enters the right password. -->
+  <script>
+    if (localStorage.getItem('novibet-auth') !== 'ok') {
+      window.location.replace('login.html');
+    }
+  </script>
   
   <!-- Google Fonts - Plus Jakarta Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -101,7 +110,16 @@
           </a>
         </div>
       </nav>
-      
+
+      <!-- Footer pinned to the bottom (margin-top:auto on .sidebar-footer).
+           Clears the auth flag and bounces to the login page. -->
+      <div class="sidebar-footer">
+        <button id="sidebar-logout" class="sidebar-logout" type="button" aria-label="Sair">
+          <i data-lucide="log-out" class="nav-icon"></i>
+          <span class="nav-text" data-pt="Sair" data-en="Log out">Sair</span>
+        </button>
+      </div>
+
     </aside>
     
     <!-- Main Content -->

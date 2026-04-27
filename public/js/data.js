@@ -29,7 +29,7 @@
         const to = from + PAGE_SIZE - 1;
         requests.push(
           client.from('gold_fct_novibet')
-            .select('"Date","Total impressions","Total clicks","Complete","Investiment","Canal","Formato","Pacote","Grupo"')
+            .select('"Date","Total impressions","Total clicks","Complete","Investiment","Canal","Formato","Pacote","Grupo","Categoria","Pedido"')
             .range(from, to)
         );
       }

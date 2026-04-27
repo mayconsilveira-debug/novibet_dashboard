@@ -526,14 +526,8 @@ class Dashboard {
         const indentPx = depth * 20;
         const rowClass = depth === 0 ? '' : `child-row depth-${depth}`;
 
-        // Top-level rows are clickable to set a cross-filter on the root
-        // drill dim; child rows stay passive so the expand/collapse interaction
-        // isn't confused with filter-by-click.
-        const rootDim = this.currentDrillPath[0];
-        const filterable = depth === 0 && rootDim ? ' data-filter-row="1"' : '';
-        const nameAttr = this._escapeAttr(node.name);
         chunks.push(`
-          <tr data-path="${this._escapeAttr(path)}"${filterable} data-filter-dim="${this._escapeAttr(rootDim || '')}" data-filter-value="${nameAttr}" class="${rowClass}">
+          <tr data-path="${this._escapeAttr(path)}" class="${rowClass}">
             <td style="padding-left:${indentPx}px;">
               ${toggle}
               <strong>${node.name}</strong>
@@ -568,7 +562,6 @@ class Dashboard {
 
     tbody.querySelectorAll('.drill-toggle').forEach(btn => {
       btn.addEventListener('click', (e) => {
-        e.stopPropagation();
         const path = e.target.closest('tr').dataset.path;
         if (!path) return;
         if (this.expandedPaths.has(path)) this.expandedPaths.delete(path);
@@ -580,18 +573,6 @@ class Dashboard {
         } else {
           this.renderTable();
         }
-      });
-    });
-
-    // Row click → toggles a cross-filter for that root-dim value.
-    tbody.querySelectorAll('tr[data-filter-row="1"]').forEach(tr => {
-      tr.style.cursor = 'pointer';
-      tr.addEventListener('click', (e) => {
-        if (e.target.closest('.drill-toggle')) return;
-        const dim = tr.dataset.filterDim;
-        const value = tr.dataset.filterValue;
-        if (!dim || !value) return;
-        this.setFilter(dim, value);
       });
     });
   }

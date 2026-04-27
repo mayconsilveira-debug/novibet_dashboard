@@ -158,9 +158,6 @@
 [data-theme="dark"] .filter-chip-remove:hover {
   background: rgba(255,255,255,0.22);
 }
-.table tr[data-filter-row="1"]:hover {
-  background: var(--color-bg-subtle, rgba(148,163,184,0.08));
-}
 
 /* Credit strip in the sidebar top row — eyebrow label + BI line on the left,
    We logo centered vertically on the right. Hidden when the sidebar is
@@ -312,6 +309,51 @@
 }
 
 #sidebar.collapsed .nav-item .nav-text {
+  display: none;
+}
+
+/* Sidebar footer — pinned to the bottom because .sidebar-nav above it has
+   flex: 1 and consumes the remaining vertical space. Hosts the logout
+   button, which mirrors the styling of .nav-item but with a danger accent. */
+.sidebar-footer {
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+.sidebar-logout {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-weight: var(--font-medium);
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+#sidebar:not(.collapsed) .sidebar-logout {
+  justify-content: flex-start;
+  gap: 16px;
+  padding: 0 var(--space-3);
+}
+.sidebar-logout:hover {
+  background: var(--color-danger-light, rgba(239, 68, 68, 0.1));
+  color: var(--color-danger);
+}
+.sidebar-logout .nav-icon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+}
+.sidebar-logout .nav-text {
+  white-space: nowrap;
+}
+#sidebar.collapsed .sidebar-logout .nav-text {
   display: none;
 }
 

@@ -9,6 +9,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Logout: clears the auth flag (set by login.html on success) and bounces
+  // back to the login page. replace() — not assign() — so the dashboard isn't
+  // reachable via the back button after sign-out.
+  const logoutBtn = document.getElementById('sidebar-logout');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+      localStorage.removeItem('novibet-auth');
+      window.location.replace('login.html');
+    });
+  }
+
   function showPage(pageId) {
     const overview = document.getElementById('page-overview');
     const pacing = document.getElementById('page-pacing');

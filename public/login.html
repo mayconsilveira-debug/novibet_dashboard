@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acesso | Novibet Dashboard</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body { height: 100%; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #0F172A 0%, #1E1B4B 50%, #312E81 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      color: #111827;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Soft halo behind the card to add depth on the gradient. */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 50%; left: 50%;
+      width: 480px; height: 480px;
+      transform: translate(-50%, -50%);
+      background: radial-gradient(circle, rgba(124,58,237,0.25) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .login-card {
+      position: relative;
+      z-index: 1;
+      width: 400px;
+      max-width: 100%;
+      padding: 40px 32px 32px;
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow:
+        0 20px 60px rgba(15, 23, 42, 0.45),
+        0 1px 0 rgba(255, 255, 255, 0.6) inset;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .login-logo {
+      display: block;
+      margin: 0 auto 4px;
+      height: 36px;
+      width: auto;
+    }
+
+    .login-title {
+      text-align: center;
+      font-size: 13px;
+      font-weight: 500;
+      color: #6B7280;
+      letter-spacing: 0.2px;
+      margin-bottom: 12px;
+    }
+
+    .login-field {
+      position: relative;
+    }
+
+    .login-input {
+      width: 100%;
+      padding: 14px 44px 14px 14px;
+      border: 1.5px solid #E5E7EB;
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: inherit;
+      color: #111827;
+      background: #ffffff;
+      transition: border-color 150ms, box-shadow 150ms;
+    }
+    .login-input::placeholder { color: #9CA3AF; }
+    .login-input:focus {
+      outline: none;
+      border-color: #6355E5;
+      box-shadow: 0 0 0 3px rgba(99, 85, 229, 0.18);
+    }
+    .login-input.error {
+      border-color: #EF4444;
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+      animation: shake 0.4s;
+    }
+
+    @keyframes shake {
+      0%, 100%   { transform: translateX(0); }
+      20%, 60%   { transform: translateX(-8px); }
+      40%, 80%   { transform: translateX(8px); }
+    }
+
+    .login-toggle {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: transparent;
+      border: none;
+      color: #9CA3AF;
+      cursor: pointer;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      border-radius: 6px;
+      transition: color 150ms, background 150ms;
+    }
+    .login-toggle:hover { color: #4B5563; background: rgba(0,0,0,0.04); }
+    .login-toggle i { width: 18px; height: 18px; }
+
+    .login-error-message {
+      font-size: 12px;
+      color: #EF4444;
+      min-height: 14px;
+      visibility: hidden;
+    }
+    .login-error-message.visible { visibility: visible; }
+
+    .login-button {
+      width: 100%;
+      padding: 14px;
+      background: #6355E5;
+      color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background-color 150ms, transform 100ms;
+    }
+    .login-button:hover  { background: #4F44D4; }
+    .login-button:active { transform: scale(0.98); }
+    .login-button:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(99,85,229,0.35);
+    }
+
+    .login-footer {
+      text-align: center;
+      font-size: 11px;
+      color: #9CA3AF;
+      margin-top: 8px;
+      letter-spacing: 0.2px;
+    }
+  </style>
+</head>
+<body>
+  <form class="login-card" id="login-form" autocomplete="off" novalidate>
+    <img src="Logo Novibet.png" alt="Novibet" class="login-logo">
+    <p class="login-title">Acesso restrito</p>
+
+    <div class="login-field">
+      <input
+        type="password"
+        id="password"
+        class="login-input"
+        placeholder="Digite a senha"
+        aria-label="Senha"
+        autocomplete="current-password"
+        required
+      >
+      <button type="button" class="login-toggle" id="toggle-password" aria-label="Mostrar ou ocultar senha">
+        <i data-lucide="eye"></i>
+      </button>
+    </div>
+
+    <p class="login-error-message" id="error-msg">Senha incorreta. Tente novamente.</p>
+
+    <button type="submit" class="login-button">Entrar</button>
+
+    <p class="login-footer">Criado por Business Intelligence</p>
+  </form>
+
+  <script>
+    // Senha temporária — substituir aqui (eventualmente trocar por
+    // autenticação real via Supabase Auth ou similar).
+    const PASSWORD = 'Novibet&We_2026';
+
+    const form     = document.getElementById('login-form');
+    const input    = document.getElementById('password');
+    const errorMsg = document.getElementById('error-msg');
+    const toggleBtn = document.getElementById('toggle-password');
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (input.value === PASSWORD) {
+        localStorage.setItem('novibet-auth', 'ok');
+        window.location.replace('index.html');
+      } else {
+        // Restart the shake animation by removing + re-adding the class on
+        // the next frame.
+        input.classList.remove('error');
+        void input.offsetWidth;
+        input.classList.add('error');
+        errorMsg.classList.add('visible');
+      }
+    });
+
+    // Clear the error state as soon as the user starts typing again.
+    input.addEventListener('input', () => {
+      input.classList.remove('error');
+      errorMsg.classList.remove('visible');
+    });
+
+    toggleBtn.addEventListener('click', () => {
+      const isPwd = input.type === 'password';
+      input.type = isPwd ? 'text' : 'password';
+      const icon = toggleBtn.querySelector('i');
+      icon.setAttribute('data-lucide', isPwd ? 'eye-off' : 'eye');
+      if (window.lucide && lucide.createIcons) lucide.createIcons();
+      input.focus();
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.lucide && lucide.createIcons) lucide.createIcons();
+      input.focus();
+    });
+  </script>
+</body>
+</html>
