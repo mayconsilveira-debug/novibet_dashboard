@@ -3,13 +3,27 @@
  * Chart.js integration for dashboard
  */
 
-// Theme-aware text color for canvas-drawn labels (plugins that use ctx.fillText).
-// Read at draw time so theme switches pick up the new color on next update.
-function _pluginTextColor() {
-  return document.documentElement.getAttribute('data-theme') === 'dark'
-    ? '#C5D4DB'
-    : '#374151';
+// Theme-aware colour palette for everything Chart.js draws: legend text,
+// axis ticks, grid lines, tooltips, and the canvas-drawn plugin labels. Read
+// at draw / refresh time so theme switches pick up the new values.
+function _themeColors() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  return isDark
+    ? {
+        text:      '#E5EAF0',  // legend + ticks — high contrast on dark blue
+        textSoft:  '#C5D4DB',  // secondary canvas labels (callouts, value labels)
+        grid:      'rgba(255,255,255,0.10)',
+        tooltipBg: '#243848'
+      }
+    : {
+        text:      '#374151',
+        textSoft:  '#6B7280',
+        grid:      '#E5E7EB',
+        tooltipBg: '#1A1D2E'
+      };
 }
+// Legacy alias kept for the canvas-drawn plugin labels (callouts / value labels).
+function _pluginTextColor() { return _themeColors().textSoft; }
 
 // Custom Chart.js plugin: each slice gets an "abs (pct%)" label outside the
 // donut connected by a 2-segment leader line — short radial out from the arc
@@ -218,10 +232,15 @@ class DashboardCharts {
       views: { border: '#34D399', bg: 'rgba(52, 211, 153, 0.12)' }
     };
 
-    this.colors = {
-      grid: '#E5E7EB',
-      text: '#6B7280'
-    };
+    // Reads the live theme palette every time it's accessed — chart configs
+    // built with this object pick up the current theme's colours on creation,
+    // and theme.js's refresh() then re-applies them after a toggle.
+    Object.defineProperty(this, 'colors', {
+      get() {
+        const t = _themeColors();
+        return { grid: t.grid, text: t.text };
+      }
+    });
 
     // Populated async from Supabase; until it arrives the main chart renders
     // with empty data.
@@ -249,20 +268,38 @@ class DashboardCharts {
       type: 'line',
       data: {
         labels: data.labels,
-        datasets: [{
-          label: this.getMetricLabel(this.currentMetric),
-          data: data.values,
-          borderColor: colors.border,
-          backgroundColor: colors.bg,
-          borderWidth: 2,
-          fill: true,
-          tension: 0.4,
-          pointRadius: 4,
-          pointBackgroundColor: colors.border,
-          pointBorderColor: '#fff',
-          pointBorderWidth: 2,
-          pointHoverRadius: 6
-        }]
+        datasets: [
+          {
+            label: this.getMetricLabel(this.currentMetric),
+            data: data.values,
+            borderColor: colors.border,
+            backgroundColor: colors.bg,
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 4,
+            pointBackgroundColor: colors.border,
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointHoverRadius: 6
+          },
+          {
+            // YoY ghost line — dashed grey, no fill, only populated when the
+            // active period targets a specific year. Hidden when its data is
+            // empty/null so legend doesn't show an inert series.
+            label: data.yoyLabel || 'Ano anterior',
+            data: data.yoyValues || [],
+            borderColor: '#9CA3AF',
+            backgroundColor: 'transparent',
+            borderWidth: 1.5,
+            borderDash: [6, 4],
+            fill: false,
+            tension: 0.4,
+            pointRadius: 0,
+            pointHoverRadius: 4,
+            hidden: !(data.yoyValues && data.yoyValues.some(v => v != null && v !== 0))
+          }
+        ]
       },
       options: {
         responsive: true,
@@ -283,7 +320,7 @@ class DashboardCharts {
             }
           },
           tooltip: {
-            backgroundColor: '#1A1D2E',
+            backgroundColor: _themeColors().tooltipBg,
             titleColor: '#fff',
             bodyColor: '#fff',
             padding: 12,
@@ -343,6 +380,11 @@ class DashboardCharts {
    * Supabase. Applies the Dashboard's current period + cross-filter dims so
    * the main chart stays in sync with the rest of Overview. Returns empty
    * series until the row cache has been populated by data.js.
+   *
+   * Shape: { labels, values, yoyValues? }
+   *   - yoyValues is populated when the active period targets a single year
+   *     (or when a date range can be year-shifted), used by the chart to
+   *     paint a dashed ghost of the previous-year line for comparison.
    */
   getDataForMetricAndDrill(metric, drill) {
     const DD = window.DashboardData;
@@ -351,10 +393,49 @@ class DashboardCharts {
       ? window.dashboard.getActivePeriod()
       : null;
     const rows = DD.applyFilters ? DD.applyFilters(this._rows, period) : this._rows;
-    if (drill === 'ano') return DD.aggregateByYear(rows, metric);
-    if (drill === 'mes') return DD.aggregateByMonth(rows, metric);
-    if (drill === 'semana') return DD.aggregateByWeek(rows, metric, 12);
-    return { labels: [], values: [] };
+    let out;
+    if (drill === 'ano')         out = DD.aggregateByYear(rows, metric);
+    else if (drill === 'mes')    out = DD.aggregateByMonth(rows, metric);
+    else if (drill === 'semana') out = DD.aggregateByWeek(rows, metric, 12);
+    else return { labels: [], values: [] };
+
+    // Tag on previous year's series for the same drill, aligned to the same
+    // x-axis labels, so the chart can render a YoY ghost line.
+    if (period && period.year && drill !== 'semana' && DD.aggregateByYear && this._rows) {
+      const prevYear = period.year - 1;
+      const prevDims = period.dims;
+      const prevPeriod = {
+        year: prevYear,
+        ...(period.quarter ? { quarter: period.quarter } : {}),
+        dims: prevDims
+      };
+      const prevRows = DD.applyFilters ? DD.applyFilters(this._rows, prevPeriod) : this._rows;
+      let prev;
+      if (drill === 'mes')      prev = DD.aggregateByMonth(prevRows, metric, prevYear);
+      else if (drill === 'ano') prev = DD.aggregateByYear(prevRows, metric);
+      // Only attach a YoY series if the previous period actually has data —
+      // otherwise we'd paint a flat-zero ghost line that looks like a bug.
+      const hasData = (arr) => Array.isArray(arr) && arr.some(v => v != null && v !== 0);
+      if (prev && hasData(prev.values)) {
+        if (drill === 'mes') {
+          out.yoyValues = prev.values;
+          out.yoyLabel  = String(prevYear);
+        } else if (drill === 'ano' && out.labels && out.labels.length) {
+          // Year drill labels are individual years; align by shifting each
+          // current year to its previous-year value (if present).
+          const map = new Map(prev.labels.map((y, i) => [y, prev.values[i]]));
+          const aligned = out.labels.map(y => {
+            const prevY = String(+y - 1);
+            return map.has(prevY) ? map.get(prevY) : null;
+          });
+          if (hasData(aligned)) {
+            out.yoyValues = aligned;
+            out.yoyLabel = 'YoY';
+          }
+        }
+      }
+    }
+    return out;
   }
   
   /**
@@ -378,17 +459,27 @@ class DashboardCharts {
    */
   updateChart() {
     if (!this.mainChart) return;
-    
+
     const data = this.getDataForMetricAndDrill(this.currentMetric, this.currentDrill);
     const colors = this.kpiColors[this.currentMetric];
-    
+
     this.mainChart.data.labels = data.labels;
     this.mainChart.data.datasets[0].label = this.getMetricLabel(this.currentMetric);
     this.mainChart.data.datasets[0].data = data.values;
     this.mainChart.data.datasets[0].borderColor = colors.border;
     this.mainChart.data.datasets[0].backgroundColor = colors.bg;
     this.mainChart.data.datasets[0].pointBackgroundColor = colors.border;
-    
+
+    // YoY ghost dataset: filled in when there's a year filter active AND the
+    // previous period has at least one non-zero value. Hidden otherwise so
+    // the legend doesn't show a dead "Ano anterior" entry.
+    const ds1 = this.mainChart.data.datasets[1];
+    if (ds1) {
+      ds1.label  = data.yoyLabel || 'Ano anterior';
+      ds1.data   = data.yoyValues || [];
+      ds1.hidden = !(data.yoyValues && data.yoyValues.some(v => v != null && v !== 0));
+    }
+
     this.mainChart.update();
   }
   
@@ -410,7 +501,7 @@ class DashboardCharts {
         boxHeight: 6,
         padding: 8,
         font: { size: 10 },
-        color: '#6B7280'
+        color: _themeColors().text
       }
     };
 
@@ -499,7 +590,7 @@ class DashboardCharts {
                 boxHeight: 6,
                 padding: 10,
                 font: { size: 11 },
-                color: '#6B7280'
+                color: _themeColors().text
               }
             },
             tooltip: {

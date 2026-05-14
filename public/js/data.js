@@ -5,13 +5,27 @@
     return;
   }
 
-  const client = window.supabase.createClient(cfg.url, cfg.publishableKey);
+  // Override the underlying fetch so PostgREST responses skip the browser
+  // HTTP cache. Without this, after a Supabase data refresh the dashboard
+  // keeps reading stale JSON until the user does a hard reload.
+  const client = window.supabase.createClient(cfg.url, cfg.publishableKey, {
+    global: {
+      fetch: (input, init) => fetch(input, { ...(init || {}), cache: 'no-store' })
+    }
+  });
   const PAGE_SIZE = 1000;
 
   // Shared cache of fact-table rows, columns pruned to only what the UI needs.
   // Populated once on first call; every downstream function (KPIs, main chart,
   // etc.) reads from here to avoid re-downloading 72k+ rows.
   let _allRowsPromise = null;
+
+  // Drop both row caches so the next aggregation re-fetches from Supabase.
+  // Wired to the sidebar "Atualizar" button.
+  function invalidateCache() {
+    _allRowsPromise = null;
+    _allPacingPromise = null;
+  }
 
   async function fetchAllFactRows() {
     if (_allRowsPromise) return _allRowsPromise;
@@ -94,7 +108,7 @@
   //     dim set. Empty / null values are ignored.
   function _filterByPeriod(rows, period) {
     if (!period) return rows;
-    const { year, dateFrom, dateTo, dims } = period;
+    const { year, quarter, dateFrom, dateTo, dims } = period;
     let filtered = rows;
     if (dateFrom || dateTo) {
       filtered = filtered.filter(r => {
@@ -105,6 +119,15 @@
       });
     } else if (year) {
       filtered = filtered.filter(r => yearOf(r.Date) === year);
+    }
+    if (quarter) {
+      // Quarter applies on top of year (or across all years when year is null).
+      // Q1=Jan-Mar (months 1-3), Q2=Apr-Jun, Q3=Jul-Sep, Q4=Oct-Dec.
+      filtered = filtered.filter(r => {
+        if (!r.Date) return false;
+        const m = +r.Date.slice(5, 7);
+        return Math.ceil(m / 3) === quarter;
+      });
     }
     if (dims) {
       const entries = Object.entries(dims).filter(([, v]) => v != null && v !== '');
@@ -133,8 +156,64 @@
       totals.invest += r['Investiment'] || 0;
     }
     totals.ctr = totals.impressions > 0 ? (totals.clicks / totals.impressions) * 100 : 0;
+    // Cost efficiency KPIs — meaningful only when the same period has both
+    // delivery (impressions/clicks/views) and spend. Defaults to 0 otherwise.
+    totals.cpm = totals.impressions > 0 ? totals.invest / (totals.impressions / 1000) : 0;
+    totals.cpc = totals.clicks > 0      ? totals.invest /  totals.clicks            : 0;
+    totals.cpv = totals.views > 0       ? totals.invest /  totals.views             : 0;
     totals.rowCount = filtered.length;
     return totals;
+  }
+
+  // Same-length period immediately preceding `period`, used for delta vs
+  // previous period on the KPI cards.
+  //   - { year: Y }            → { year: Y - 1 }
+  //   - { dateFrom, dateTo }   → shifted back (to - from + 1) days
+  //   - null / consolidated    → null (no comparison)
+  function previousPeriod(period) {
+    if (!period) return null;
+    const { year, quarter, dateFrom, dateTo, dims } = period;
+    const passDims = dims ? { dims } : {};
+    if (year && quarter) {
+      // Q1 of year Y → Q4 of year Y-1; otherwise step back one quarter.
+      const prevQ = quarter === 1 ? 4 : quarter - 1;
+      const prevY = quarter === 1 ? year - 1 : year;
+      return { year: prevY, quarter: prevQ, ...passDims };
+    }
+    if (year) return { year: year - 1, ...passDims };
+    if (quarter) {
+      const prevQ = quarter === 1 ? 4 : quarter - 1;
+      return { quarter: prevQ, ...passDims };
+    }
+    if (dateFrom && dateTo) {
+      const from = new Date(dateFrom + 'T00:00:00Z');
+      const to   = new Date(dateTo   + 'T00:00:00Z');
+      const lenMs = to - from;
+      const newTo   = new Date(from.getTime() - 86400000);            // day before dateFrom
+      const newFrom = new Date(newTo.getTime() - lenMs);
+      const iso = (d) => d.toISOString().slice(0, 10);
+      return { dateFrom: iso(newFrom), dateTo: iso(newTo), ...passDims };
+    }
+    return null;
+  }
+
+  // Returns { current, previous, deltas } where each delta is the % change vs
+  // the previous period (null when the previous value is 0 / unknown).
+  async function fetchOverviewKPIsWithDelta(period) {
+    const current = await fetchOverviewKPIs(period);
+    const prev = previousPeriod(period);
+    if (!prev) return { current, previous: null, deltas: {} };
+    const previous = await fetchOverviewKPIs(prev);
+    const deltas = {};
+    const keys = ['impressions', 'clicks', 'views', 'invest', 'ctr', 'cpm', 'cpc', 'cpv'];
+    for (const k of keys) {
+      if (previous[k] && previous[k] !== 0) {
+        deltas[k] = ((current[k] - previous[k]) / previous[k]) * 100;
+      } else {
+        deltas[k] = null;
+      }
+    }
+    return { current, previous, deltas };
   }
 
   // Functions that used to accept a raw `year` now accept either a year
@@ -242,8 +321,6 @@
     }
     if (!latestDate) return { labels: [], values: [] };
 
-    const endIso = isoWeek(latestDate);
-
     // Walk back `weeksBack` ISO weeks from the end.
     const windowKeys = [];
     const cursor = new Date(latestDate);
@@ -273,6 +350,22 @@
     if (drill === 'mes') return aggregateByMonth(rows, metric);
     if (drill === 'semana') return aggregateByWeek(rows, metric, 12);
     return { labels: [], values: [] };
+  }
+
+  // Returns the year-over-year series for the main chart, aligned to the
+  // current series' x-axis: when the user is looking at 2026 monthly, the
+  // YoY line is 2025's monthly values plotted against the same Jan..Dez
+  // labels. Only meaningful when `period.year` is set.
+  async function aggregateYoYByDrill(metric, drill, period) {
+    if (!period || !period.year) return null;
+    const prevYear = period.year - 1;
+    const rows = await fetchAllFactRows();
+    const prevPeriod = { year: prevYear, dims: period.dims };
+    const prevRows = _filterByPeriod(rows, prevPeriod);
+    if (drill === 'ano') return aggregateByYear(prevRows, metric);
+    if (drill === 'mes') return aggregateByMonth(prevRows, metric, prevYear);
+    // Week-level YoY is ambiguous (ISO weeks shift year to year) — skip.
+    return null;
   }
 
   // --- Overview table + mini charts --------------------------------------
@@ -451,6 +544,55 @@
     };
   }
 
+  // Aggregates fact rows into a 2D matrix indexed by (Canal, Formato).
+  // Returns { canals, formats, matrix } where matrix[i][j] is either null
+  // (no rows for that combination) or an object with the metrics needed by
+  // the UI heatmap: { impressions, clicks, views, invest, ctr, vtr, cpm }.
+  //
+  // Canal / Formato lists are sorted by total impressions (desc) so the
+  // most-trafficked combinations end up in the top-left of the rendered
+  // grid.
+  async function aggregateHeatmap(arg) {
+    const period = _periodFromArg(arg);
+    const rows = await fetchAllFactRows();
+    const filtered = _filterByPeriod(rows, period);
+
+    const canalTotals  = new Map(); // canal → impressions
+    const formatTotals = new Map(); // formato → impressions
+    const cells = new Map();        // `${canal}${formato}` → group sums
+
+    for (const r of filtered) {
+      const c = r['Canal']   || '—';
+      const f = r['Formato'] || '—';
+      const imp = r['Total impressions'] || 0;
+      canalTotals.set(c,  (canalTotals.get(c)  || 0) + imp);
+      formatTotals.set(f, (formatTotals.get(f) || 0) + imp);
+      const key = `${c}${f}`;
+      let g = cells.get(key);
+      if (!g) { g = emptyGroup(); cells.set(key, g); }
+      addRowToGroup(g, r);
+    }
+
+    const canals  = [...canalTotals.entries()] .sort((a, b) => b[1] - a[1]).map(([k]) => k);
+    const formats = [...formatTotals.entries()].sort((a, b) => b[1] - a[1]).map(([k]) => k);
+
+    const matrix = canals.map(c => formats.map(f => {
+      const g = cells.get(`${c}${f}`);
+      if (!g || !g.impressions) return null;
+      return {
+        impressions: g.impressions,
+        clicks:      g.clicks,
+        views:       g.views,
+        invest:      g.invest,
+        ctr: g.impressions > 0 ? (g.clicks / g.impressions) * 100 : 0,
+        vtr: g.impressions > 0 ? (g.views  / g.impressions) * 100 : 0,
+        cpm: g.impressions > 0 ? g.invest  / (g.impressions / 1000) : 0
+      };
+    }));
+
+    return { canals, formats, matrix };
+  }
+
   // --- Pacing page --------------------------------------------------------
   //
   // Produces a payload in the exact shape PacingModule.init() expects, built
@@ -557,7 +699,6 @@
 
   function yearOf(d) { return d ? +d.slice(0, 4) : 0; }
   function monthOf(d) { return d ? +d.slice(5, 7) - 1 : 0; }
-  function dayOf(d)   { return d ? +d.slice(8, 10) : 0; }
 
   // Today in local-calendar YYYY-MM-DD — used to cap "realizado" series so
   // actuals never extend into the future even when the dataset contains
@@ -910,21 +1051,58 @@
     return { labels: [], actual: [], expected: [], expectedTotal: 0, actualTotal: 0 };
   }
 
+  function formatBRL(n) {
+    return 'R$ ' + (n || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  // Renders the stat cards. `kpis` may be either a flat totals object (legacy)
+  // or { current, deltas } (when called by Dashboard with a comparison
+  // period). When deltas are present each card's .stat-change element is
+  // updated with the % delta + an up/down arrow; otherwise the indicators are
+  // hidden.
   function renderKPIs(kpis) {
+    const current = kpis && kpis.current ? kpis.current : kpis;
+    const deltas  = kpis && kpis.deltas  ? kpis.deltas  : null;
+
     const set = (metric, text) => {
       const el = document.querySelector(`.stat-card[data-metric="${metric}"] .stat-value`);
       if (el) el.textContent = text;
     };
-    set('impressions', kpis.impressions.toLocaleString('pt-BR'));
-    set('clicks', kpis.clicks.toLocaleString('pt-BR'));
-    set('ctr', kpis.ctr.toFixed(2) + '%');
-    set('views', kpis.views.toLocaleString('pt-BR'));
 
-    // Deltas are period-over-period; we don't have a comparison period defined
-    // yet, so hide the placeholder indicators rather than show stale values.
-    document.querySelectorAll('.stat-card .stat-change').forEach(el => {
-      el.style.display = 'none';
+    set('impressions', current.impressions.toLocaleString('pt-BR'));
+    set('clicks',      current.clicks.toLocaleString('pt-BR'));
+    set('ctr',         current.ctr.toFixed(2) + '%');
+    set('views',       current.views.toLocaleString('pt-BR'));
+    set('cpm',         formatBRL(current.cpm));
+    set('cpc',         formatBRL(current.cpc));
+    set('cpv',         formatBRL(current.cpv));
+
+    // Apply deltas. For inverted metrics (CPM/CPC/CPV — lower is better),
+    // a negative delta is a positive outcome, so we flip the polarity used to
+    // pick the colour / arrow direction.
+    const invertedMetrics = new Set(['cpm', 'cpc', 'cpv']);
+    document.querySelectorAll('.stat-card').forEach(card => {
+      const metric = card.dataset.metric;
+      const changeEl = card.querySelector('.stat-change');
+      if (!changeEl) return;
+      const d = deltas ? deltas[metric] : null;
+      if (d == null || !isFinite(d)) {
+        changeEl.style.display = 'none';
+        return;
+      }
+      changeEl.style.display = '';
+      const isInverted = invertedMetrics.has(metric);
+      // "good" = improvement direction; for cost metrics that's a drop.
+      const isGood = isInverted ? d < 0 : d > 0;
+      changeEl.classList.remove('positive', 'negative');
+      changeEl.classList.add(isGood ? 'positive' : 'negative');
+      const arrow = (isInverted ? d > 0 : d > 0) ? 'trending-up' : 'trending-down';
+      const sign = d > 0 ? '+' : '';
+      changeEl.innerHTML = `
+        <i data-lucide="${arrow}" style="width:12px;height:12px;"></i>
+        ${sign}${d.toFixed(1).replace('.', ',')}%`;
     });
+    if (window.lucide && lucide.createIcons) lucide.createIcons();
   }
 
   function showKPILoading() {
@@ -933,9 +1111,22 @@
     });
   }
 
+  // onDataReady supports "late subscribers": if rows have already arrived,
+  // run the callback immediately. Otherwise queue it. Without this, a callback
+  // registered after emitDataReady would never fire.
   const listeners = [];
-  function onDataReady(cb) { listeners.push(cb); }
-  function emitDataReady(rows) { for (const cb of listeners) { try { cb(rows); } catch (e) { console.error(e); } } }
+  let _readyRows = null;
+  function onDataReady(cb) {
+    if (_readyRows) {
+      try { cb(_readyRows); } catch (e) { console.error(e); }
+    } else {
+      listeners.push(cb);
+    }
+  }
+  function emitDataReady(rows) {
+    _readyRows = rows;
+    for (const cb of listeners) { try { cb(rows); } catch (e) { console.error(e); } }
+  }
 
   window.DashboardData = {
     client,
@@ -944,7 +1135,10 @@
     fetchAllFactRows,
     fetchAllPacingRows,
     fetchOverviewKPIs,
+    fetchOverviewKPIsWithDelta,
+    previousPeriod,
     applyFilters: _filterByPeriod,
+    invalidateCache,
     aggregateByDrill,
     aggregateByYear,
     aggregateByMonth,
@@ -959,6 +1153,8 @@
     aggregateFormatShareForYear,
     aggregateChannelsByImpressionsForYear,
     aggregateChannelsByViewsForYear,
+    aggregateHeatmap,
+    aggregateYoYByDrill,
     computePacingForYear,
     computePacingTrend,
     channelInsight,
@@ -979,10 +1175,11 @@
   onReady(async () => {
     showKPILoading();
     try {
+      // Only kick off the bulk row fetch + notify subscribers (e.g. charts.js).
+      // KPIs themselves are rendered by Dashboard.loadOverviewData(), which
+      // also computes the previous-period delta — running them here too just
+      // duplicates work and causes a visible flicker.
       const rows = await fetchAllFactRows();
-      const kpis = await fetchOverviewKPIs();
-      renderKPIs(kpis);
-      console.log('[Supabase] KPIs loaded from', kpis.rowCount, 'rows:', kpis);
       emitDataReady(rows);
     } catch (err) {
       console.error('[Supabase] load failed:', err);

@@ -55,12 +55,19 @@
   display: none;
 }
 
+/* Collapsed sidebar has no use for the empty "Dashboard" header — hide it
+   entirely so the hamburger row sits flush with the nav icons below. */
+#sidebar.collapsed .sidebar-header {
+  display: none;
+}
+
 /* Top row of the sidebar: hamburger + credit block sharing a single row so
    the credit has the whole width (minus hamburger) to lay out its eyebrow
    label, the BI line, and the We logo without wrapping. */
 .sidebar-top-row {
   display: flex;
   align-items: stretch;
+  min-height: var(--topbar-height);
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -189,9 +196,9 @@
   font-size: 9px;
   font-weight: 600;
   color: var(--color-text-secondary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  line-height: 1.2;
+  word-break: keep-all;
 }
 [data-theme="dark"] .sidebar-credit-eyebrow,
 [data-theme="dark"] .sidebar-credit-title {
@@ -312,51 +319,6 @@
   display: none;
 }
 
-/* Sidebar footer — pinned to the bottom because .sidebar-nav above it has
-   flex: 1 and consumes the remaining vertical space. Hosts the logout
-   button, which mirrors the styling of .nav-item but with a danger accent. */
-.sidebar-footer {
-  padding: var(--space-3) var(--space-4);
-  border-top: 1px solid var(--color-border);
-}
-.sidebar-logout {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 44px;
-  padding: 0;
-  border: none;
-  border-radius: var(--radius-md);
-  background: transparent;
-  color: var(--color-text-secondary);
-  font-weight: var(--font-medium);
-  font-family: inherit;
-  font-size: inherit;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-#sidebar:not(.collapsed) .sidebar-logout {
-  justify-content: flex-start;
-  gap: 16px;
-  padding: 0 var(--space-3);
-}
-.sidebar-logout:hover {
-  background: var(--color-danger-light, rgba(239, 68, 68, 0.1));
-  color: var(--color-danger);
-}
-.sidebar-logout .nav-icon {
-  flex-shrink: 0;
-  width: 20px;
-  height: 20px;
-}
-.sidebar-logout .nav-text {
-  white-space: nowrap;
-}
-#sidebar.collapsed .sidebar-logout .nav-text {
-  display: none;
-}
-
 /* Sidebar Settings — quick language + theme controls under the logo */
 .sidebar-settings {
   padding: var(--space-3) var(--space-4);
@@ -468,41 +430,6 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
-}
-
-/* Search Input */
-.search-box {
-  position: relative;
-}
-
-.search-input {
-  width: 280px;
-  padding: var(--space-2) var(--space-3) var(--space-2) var(--space-8);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-bg);
-  font-size: var(--text-body);
-  transition: all var(--transition-fast);
-}
-
-.search-input:focus {
-  outline: none;
-  border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px var(--color-accent-light);
-}
-
-.search-icon {
-  position: absolute;
-  left: var(--space-3);
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--color-text-muted);
-}
-
-@media (max-width: 768px) {
-  .search-input {
-    width: 180px;
-  }
 }
 
 /* Date Range Filter */
@@ -661,6 +588,111 @@
 .pacing-total-actual   { box-shadow: inset 3px 0 0 #2563EB; }
 .pacing-total-expected { box-shadow: inset 3px 0 0 #9CA3AF; }
 .pacing-total-delta    { box-shadow: inset 3px 0 0 var(--color-accent, #7C3AED); }
+
+/* Heatmap Canal × Formato — coloured grid where each cell is one combo.
+   The grid uses CSS Grid with a fixed first column (canal labels) and
+   the rest auto-sized. Header rotation is avoided so the labels stay
+   readable; instead they truncate with ellipsis on narrow viewports. */
+.heatmap-container {
+  width: 100%;
+  overflow-x: auto;
+  padding: var(--space-3) var(--space-4) var(--space-4);
+}
+.heatmap-grid {
+  display: grid;
+  gap: 2px;
+  min-width: 600px;
+}
+.heatmap-corner {
+  background: transparent;
+}
+.heatmap-col-head,
+.heatmap-row-head {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  padding: 6px 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.heatmap-col-head {
+  text-align: center;
+}
+.heatmap-row-head {
+  text-align: left;
+  display: flex;
+  align-items: center;
+}
+.heatmap-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 4px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  border-radius: 4px;
+  cursor: default;
+}
+.heatmap-cell-empty {
+  background: var(--color-bg-subtle, rgba(148,163,184,0.10));
+  color: var(--color-text-muted);
+}
+.heatmap-empty {
+  padding: var(--space-6);
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+.heatmap-metric-toggle {
+  display: inline-flex;
+  gap: var(--space-1);
+}
+
+/* Pacing ranking section headers — sit above each delivery-rate bucket
+   (Em atenção / Em risco / No ritmo). The dot colour matches the gauge
+   threshold so headers tie back to the cards below. */
+.pacing-section-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 6px 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  letter-spacing: 0.2px;
+}
+.pacing-section-header + .pacing-channel-card {
+  margin-top: 4px;
+}
+.pacing-section-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+.pacing-section-critical .pacing-section-dot { background: var(--color-danger); }
+.pacing-section-risk     .pacing-section-dot { background: var(--color-warning); }
+.pacing-section-ontrack  .pacing-section-dot { background: var(--color-success); }
+.pacing-section-label    { text-transform: uppercase; }
+.pacing-section-hint {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+.pacing-section-count {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--color-bg-subtle, rgba(148,163,184,0.12));
+}
 
 .pacing-channel-card {
   display: flex;
@@ -951,8 +983,9 @@
   color: white;
 }
 
-/* Year Filter Buttons */
-.year-btn {
+/* Year & Quarter Filter Buttons */
+.year-btn,
+.quarter-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -966,17 +999,29 @@
   color: #555;
   transition: all 200ms ease;
 }
-.year-btn:hover {
+.quarter-btn { padding: 6px 12px; }
+.year-btn:hover,
+.quarter-btn:hover {
   border-color: var(--color-accent);
   color: var(--color-accent);
 }
-.year-btn.active {
+.year-btn.active,
+.quarter-btn.active {
   background: var(--color-accent) !important;
   color: white !important;
   border-color: var(--color-accent) !important;
 }
-.year-btn.active:hover {
+.year-btn.active:hover,
+.quarter-btn.active:hover {
   background: var(--color-accent-dark) !important;
+}
+.quarter-btn:disabled,
+.quarter-btn:disabled:hover {
+  opacity: 0.4;
+  cursor: not-allowed;
+  border-color: #ddd;
+  color: #999;
+  background: white;
 }
 
 .btn-icon {
@@ -1043,6 +1088,25 @@
 
 .stat-card.active .stat-value {
   color: var(--color-accent);
+}
+
+/* Efficiency cost-per-X cards (CPM/CPC/CPV) — informational variant of the
+   stat card. Smaller value, no click affordance, no active state. */
+.stat-card.stat-card-secondary {
+  cursor: default;
+  background: var(--color-surface);
+  padding: var(--space-4);
+}
+.stat-card.stat-card-secondary:hover {
+  transform: none;
+  box-shadow: var(--shadow-card);
+}
+.stat-card.stat-card-secondary .stat-value {
+  font-size: 20px;
+}
+.stat-card.stat-card-secondary.active {
+  /* Secondary cards never become the active KPI driver. */
+  background: var(--color-surface);
 }
 
 .stat-label {

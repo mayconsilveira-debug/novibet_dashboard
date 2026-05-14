@@ -21,11 +21,20 @@ class Dashboard {
     // (2025 + 2026 consolidated). A year is only set when the user clicks a
     // year button; a date range overrides it while active.
     this.currentYear = null;
+    this.currentQuarter = null;       // 1..4 or null
+    this.currentDateFrom = null;
+    this.currentDateTo   = null;
+    // Min / max of the available data range. Set once data loads; used both
+    // as <input min/max> bounds AND as the visible pre-fill so the user always
+    // sees the available range, even after switching to year/quarter mode.
+    this.dateMin = '2025-01-01';
+    this.dateMax = null;
 
     // Unified filter descriptor consumed by every Overview aggregation.
     // null   → no filter (consolidated view)
-    // { year }                    → year-based filter
-    // { dateFrom, dateTo }        → date-range filter (wins over year)
+    // { year, quarter? }                 → year (+ optional quarter) filter
+    // { quarter }                        → quarter-only (across years) filter
+    // { dateFrom, dateTo }               → date-range filter (wins over both)
     this.currentPeriod = null;
 
     // Cross-filter dims set by clicking chart slices / table rows. Shape:
@@ -44,25 +53,45 @@ class Dashboard {
     this.initTable();
     this.initTableDrillButtons();
     this.initYearFilter();
+    this.initQuarterFilter();
     this.initDateRangeFilter();
     this.initModal();
     this.initToast();
-    this.initSearch();
     this.initDrillButtons();
     this.initActiveFiltersBar();
+    this.initHeatmap();
     // Chip labels depend on the active language.
     document.addEventListener('langchange', () => this.renderActiveFilters());
 
-    // Initialize charts after a short delay to ensure Chart.js is loaded
-    setTimeout(() => {
-      if (window.dashboardCharts) {
-        window.dashboardCharts.initMainChart('mainChart');
-        window.dashboardCharts.initMiniCharts();
-      }
-    }, 100);
+    // Chart.js is loaded synchronously in <head>, so charts can be wired up
+    // immediately — no need to defer. Doing this before loadOverviewData
+    // ensures updateChart() at the end of the load actually has a chart to
+    // update (otherwise the main chart can render empty until next filter).
+    if (window.dashboardCharts) {
+      window.dashboardCharts.initMainChart('mainChart');
+      window.dashboardCharts.initMiniCharts();
+    }
 
     // Pull real data for the default period (KPIs + table + mini charts).
     this.loadOverviewData();
+  }
+
+  /**
+   * Recompute this.currentPeriod from year / quarter / date-range state.
+   * Date range wins; otherwise year + quarter merge into a single period.
+   */
+  _rebuildPeriod() {
+    if (this.currentDateFrom || this.currentDateTo) {
+      this.currentPeriod = {
+        dateFrom: this.currentDateFrom,
+        dateTo:   this.currentDateTo
+      };
+      return;
+    }
+    const p = {};
+    if (this.currentYear)    p.year    = this.currentYear;
+    if (this.currentQuarter) p.quarter = this.currentQuarter;
+    this.currentPeriod = Object.keys(p).length ? p : null;
   }
 
   /**
@@ -72,9 +101,58 @@ class Dashboard {
    */
   async loadYearData(year) {
     this.currentYear = year;
-    this.currentPeriod = year ? { year } : null;
-    // Clear the date range inputs — year / consolidated takes priority.
-    document.querySelectorAll('.date-input').forEach(inp => { inp.value = ''; });
+    // Year click clears any active date range — the two are mutually exclusive.
+    this.currentDateFrom = null;
+    this.currentDateTo   = null;
+    this._restoreDateInputs();
+    // Refresh quarter availability for the new year. If the currently active
+    // quarter has no data for this year, drop it so we don't render an empty
+    // dashboard from a stale filter.
+    this._refreshQuarterAvailability();
+    if (this.currentQuarter && !this._quarterHasData(year, this.currentQuarter)) {
+      this.currentQuarter = null;
+      document.querySelectorAll('.quarter-btn').forEach(b => b.classList.remove('active'));
+    }
+    this._rebuildPeriod();
+    await this.loadOverviewData();
+  }
+
+  /** Reset the visible "De / Até" values back to the full data range. */
+  _restoreDateInputs() {
+    const inputs = document.querySelectorAll('.date-input');
+    if (inputs.length < 2 || !this.dateMax) return;
+    inputs[0].value = this.dateMin;
+    inputs[1].value = this.dateMax;
+  }
+
+  /** Returns true when (year, quarter) has at least one row in the fact table. */
+  _quarterHasData(year, quarter) {
+    if (!this._quarterAvailability) return true;       // unknown yet → don't disable
+    if (!year) return true;                            // no year filter → quarter spans years
+    return this._quarterAvailability.has(`${year}-${quarter}`);
+  }
+
+  /** Toggle `disabled` on quarter buttons based on data availability. */
+  _refreshQuarterAvailability() {
+    document.querySelectorAll('.quarter-btn').forEach(btn => {
+      const q = parseInt(btn.dataset.quarter);
+      const hasData = this._quarterHasData(this.currentYear, q);
+      btn.disabled = !hasData;
+      btn.title = hasData ? '' : 'Sem dados para este trimestre';
+    });
+  }
+
+  /**
+   * Quarter filter path. Pass 1..4 to filter, or null to clear. Quarter
+   * applies on top of the active year (or across all years when no year is
+   * set). Clears any active date range.
+   */
+  async loadQuarterData(quarter) {
+    this.currentQuarter = quarter;
+    this.currentDateFrom = null;
+    this.currentDateTo   = null;
+    this._restoreDateInputs();
+    this._rebuildPeriod();
     await this.loadOverviewData();
   }
 
@@ -175,16 +253,142 @@ class Dashboard {
     const DD = window.DashboardData;
     if (!DD) return;
     const period = this.getActivePeriod();
-    try {
-      const kpis = await DD.fetchOverviewKPIs(period);
-      if (DD.renderKPIs) DD.renderKPIs(kpis);
-    } catch (err) {
-      console.error('[Supabase] KPI load failed:', err);
-    }
-    await this.loadTableData();
+
+    // Every block below reads from the same cached fact-row promise, so they
+    // can run in parallel — the first one triggers the network fetch and the
+    // rest await the same promise. Each block paints as soon as it resolves,
+    // so KPIs / table / heatmap / mini charts don't block one another.
+    const kpiTask = (async () => {
+      try {
+        const kpis = DD.fetchOverviewKPIsWithDelta
+          ? await DD.fetchOverviewKPIsWithDelta(period)
+          : await DD.fetchOverviewKPIs(period);
+        if (DD.renderKPIs) DD.renderKPIs(kpis);
+      } catch (err) {
+        console.error('[Supabase] KPI load failed:', err);
+      }
+    })();
+
+    const tableTask    = this.loadTableData();
+    const heatmapTask  = this.loadHeatmap();
+    const miniChartsTask = window.dashboardCharts
+      ? window.dashboardCharts.updateMiniChartsForYear(period)
+      : Promise.resolve();
+
+    await Promise.all([kpiTask, tableTask, heatmapTask, miniChartsTask]);
+
     if (window.dashboardCharts) {
-      window.dashboardCharts.updateMiniChartsForYear(period);
+      window.dashboardCharts.updateChart();
     }
+  }
+
+  /**
+   * Wire the heatmap metric toggle (CTR / VTR / CPM) and load the matrix.
+   * Called once from init and re-invoked when filters change. The toggle
+   * uses event delegation so we only bind one listener.
+   */
+  initHeatmap() {
+    this.heatmapMetric = 'ctr';
+    const toggle = document.querySelector('.heatmap-metric-toggle');
+    if (!toggle) return;
+    toggle.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-heatmap-metric]');
+      if (!btn) return;
+      const metric = btn.dataset.heatmapMetric;
+      if (!metric || metric === this.heatmapMetric) return;
+      this.heatmapMetric = metric;
+      toggle.querySelectorAll('[data-heatmap-metric]').forEach(b => {
+        const active = b.dataset.heatmapMetric === metric;
+        b.classList.toggle('btn-primary',   active);
+        b.classList.toggle('btn-secondary', !active);
+      });
+      this.loadHeatmap();
+    });
+  }
+
+  /**
+   * Pull the Canal × Formato matrix for the current period and render it as a
+   * coloured grid. Top-impressions canal/formato float to the top-left.
+   */
+  async loadHeatmap() {
+    const DD = window.DashboardData;
+    if (!DD || !DD.aggregateHeatmap) return;
+    try {
+      const data = await DD.aggregateHeatmap(this.getActivePeriod());
+      this.renderHeatmap(data);
+    } catch (err) {
+      console.error('[Heatmap] load failed:', err);
+    }
+  }
+
+  renderHeatmap(data) {
+    const container = document.getElementById('heatmap-container');
+    if (!container) return;
+    const metric = this.heatmapMetric || 'ctr';
+    const { canals, formats, matrix } = data;
+    if (!canals.length || !formats.length) {
+      container.innerHTML = `<div class="heatmap-empty">—</div>`;
+      return;
+    }
+
+    // Collect non-null values for the metric so we can scale colours.
+    const vals = [];
+    for (const row of matrix) for (const cell of row) {
+      if (cell && isFinite(cell[metric])) vals.push(cell[metric]);
+    }
+    const min = vals.length ? Math.min(...vals) : 0;
+    const max = vals.length ? Math.max(...vals) : 0;
+    // For CPM lower is better → invert the colour ramp.
+    const inverted = (metric === 'cpm');
+    const fmt = (v) => {
+      if (v == null) return '';
+      if (metric === 'cpm') return 'R$ ' + v.toFixed(2).replace('.', ',');
+      return v.toFixed(2).replace('.', ',') + '%';
+    };
+    const colorFor = (v) => {
+      if (v == null || max === min) return 'rgba(148,163,184,0.10)';
+      let t = (v - min) / (max - min);     // 0..1, 1 = highest
+      if (inverted) t = 1 - t;             // for CPM, low values become "good"
+      // Red (#EF4444) → Yellow (#FACC15) → Green (#10B981)
+      const lerp = (a, b, k) => Math.round(a + (b - a) * k);
+      if (t < 0.5) {
+        const k = t / 0.5;
+        return `rgb(${lerp(0xEF, 0xFA, k)}, ${lerp(0x44, 0xCC, k)}, ${lerp(0x44, 0x15, k)})`;
+      } else {
+        const k = (t - 0.5) / 0.5;
+        return `rgb(${lerp(0xFA, 0x10, k)}, ${lerp(0xCC, 0xB9, k)}, ${lerp(0x15, 0x81, k)})`;
+      }
+    };
+
+    const headerCells = formats.map(f => `<div class="heatmap-col-head" title="${this._escapeAttr(f)}">${f}</div>`).join('');
+    const bodyRows = canals.map((canal, i) => {
+      const cells = formats.map((_, j) => {
+        const cell = matrix[i][j];
+        if (!cell) return `<div class="heatmap-cell heatmap-cell-empty">—</div>`;
+        const v = cell[metric];
+        const bg = colorFor(v);
+        // White text on stronger fills, dark text on light ones.
+        const lum = (() => {
+          // crude brightness from rgb()
+          const m = bg.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+          if (!m) return 0;
+          return (0.299 * +m[1] + 0.587 * +m[2] + 0.114 * +m[3]) / 255;
+        })();
+        const fg = lum > 0.6 ? '#1A1B3D' : '#FFFFFF';
+        const tt = `${canal} / ${formats[j]}\nImpr: ${Math.round(cell.impressions).toLocaleString('pt-BR')}\nCTR: ${cell.ctr.toFixed(2)}%\nVTR: ${cell.vtr.toFixed(2)}%\nCPM: R$ ${cell.cpm.toFixed(2)}`;
+        return `<div class="heatmap-cell" style="background:${bg};color:${fg};" title="${this._escapeAttr(tt)}">${fmt(v)}</div>`;
+      }).join('');
+      return `<div class="heatmap-row-head" title="${this._escapeAttr(canal)}">${canal}</div>${cells}`;
+    }).join('');
+
+    container.style.setProperty('--heatmap-cols', formats.length);
+    container.innerHTML = `
+      <div class="heatmap-grid" style="grid-template-columns: 140px repeat(${formats.length}, minmax(0,1fr));">
+        <div class="heatmap-corner"></div>
+        ${headerCells}
+        ${bodyRows}
+      </div>
+    `;
   }
 
   /**
@@ -200,12 +404,7 @@ class Dashboard {
         this.currentDrillPath,
         this.getActivePeriod()
       );
-      const searchInput = document.getElementById('table-search');
-      if (searchInput && searchInput.value) {
-        this.filterTable(searchInput.value.toLowerCase());
-      } else {
-        this.renderTable();
-      }
+      this.renderTable();
     } catch (err) {
       console.error('[Supabase] loadTableData failed:', err);
     }
@@ -221,31 +420,100 @@ class Dashboard {
     const inputs = document.querySelectorAll('.date-input');
     if (inputs.length < 2) return;
     const [fromInput, toInput] = inputs;
+
+    // Bounds + visible default values. min stays at 2025-01-01 (start of our
+    // data); max gets wired to the latest Date present in gold_fct_novibet
+    // once data loads. We also pre-fill the input *values* with the same
+    // bounds so the user can see the available range at a glance. Setting
+    // input.value programmatically does NOT fire the 'change' event, so the
+    // filter stays inactive until the user actually edits a date.
+    const DD = window.DashboardData;
+    if (DD && typeof DD.onDataReady === 'function') {
+      DD.onDataReady((rows) => {
+        let maxDate = null;
+        // Track which (year, quarter) combos actually have rows so we can
+        // grey out quarter buttons that would otherwise return an empty set.
+        const availability = new Set();
+        for (const r of rows) {
+          if (!r || !r.Date) continue;
+          if (!maxDate || r.Date > maxDate) maxDate = r.Date;
+          const y = +r.Date.slice(0, 4);
+          const q = Math.ceil(+r.Date.slice(5, 7) / 3);
+          availability.add(`${y}-${q}`);
+        }
+        this._quarterAvailability = availability;
+        if (maxDate) {
+          this.dateMax = maxDate;
+          fromInput.min = this.dateMin;
+          toInput.min   = this.dateMin;
+          fromInput.max = maxDate;
+          toInput.max   = maxDate;
+          // Pre-fill the visible value so the user always sees the available
+          // range. The state (currentDateFrom/To) stays null because setting
+          // input.value programmatically does not fire 'change'.
+          fromInput.value = this.dateMin;
+          toInput.value   = maxDate;
+        }
+        // Initial render — disables quarters that have no data for the
+        // currently-active year (or leaves all enabled when no year is set).
+        this._refreshQuarterAvailability();
+      });
+    }
+
     const onChange = () => {
       const from = fromInput.value || null;
       const to   = toInput.value   || null;
+      this.currentDateFrom = from;
+      this.currentDateTo   = to;
       if (from || to) {
-        this.currentPeriod = { dateFrom: from, dateTo: to };
+        // Date range wins — visually clear year & quarter pills.
         document.querySelectorAll('.year-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.quarter-btn').forEach(b => b.classList.remove('active'));
       } else {
-        this.currentPeriod = this.currentYear ? { year: this.currentYear } : null;
+        // Date range cleared — restore visual state of year & quarter pills.
         document.querySelectorAll('.year-btn').forEach(b => {
           b.classList.toggle('active',
             this.currentYear && parseInt(b.dataset.year) === this.currentYear);
         });
+        document.querySelectorAll('.quarter-btn').forEach(b => {
+          b.classList.toggle('active',
+            this.currentQuarter && parseInt(b.dataset.quarter) === this.currentQuarter);
+        });
       }
+      this._rebuildPeriod();
       this.loadOverviewData();
     };
     fromInput.addEventListener('change', onChange);
     toInput.addEventListener('change', onChange);
   }
+
+  /**
+   * Quarter filter (T1..T4). Click to toggle; selecting a different quarter
+   * replaces the current one. Quarter stacks on the active year filter.
+   */
+  initQuarterFilter() {
+    document.querySelectorAll('.quarter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const wasActive = btn.classList.contains('active');
+        document.querySelectorAll('.quarter-btn').forEach(b => b.classList.remove('active'));
+        if (wasActive) {
+          this.loadQuarterData(null);
+        } else {
+          btn.classList.add('active');
+          this.loadQuarterData(parseInt(btn.dataset.quarter));
+        }
+      });
+    });
+  }
   
   /**
-   * Initialize stat cards with click interactions
+   * Initialize stat cards with click interactions. Only the primary KPI cards
+   * drive the main chart (Impressões / Cliques / CTR / Views); the secondary
+   * CPM/CPC/CPV cards are informational and skipped.
    */
   initStatCards() {
-    const cards = document.querySelectorAll('.stat-card');
-    
+    const cards = document.querySelectorAll('.stat-card:not(.stat-card-secondary)');
+
     cards.forEach((card, index) => {
       card.addEventListener('click', () => {
         // Remove active from all
@@ -567,12 +835,7 @@ class Dashboard {
         if (this.expandedPaths.has(path)) this.expandedPaths.delete(path);
         else this.expandedPaths.add(path);
 
-        const searchInput = document.getElementById('table-search');
-        if (searchInput && searchInput.value) {
-          this.filterTable(searchInput.value.toLowerCase());
-        } else {
-          this.renderTable();
-        }
+        this.renderTable();
       });
     });
   }
@@ -595,10 +858,18 @@ class Dashboard {
   }
   
   /**
-   * Format currency
+   * Abbreviated BRL formatter for table badges. Picks the natural magnitude:
+   *   ≥ 1B  → "R$ 1,2B"     ≥ 1M  → "R$ 16,9M"
+   *   ≥ 1k  → "R$ 595k"      else  → "R$ 480"
+   * pt-BR uses comma as the decimal separator.
    */
   formatCurrency(value) {
-    return 'R$ ' + (value / 1000).toFixed(0) + 'k';
+    const n = Math.abs(value || 0);
+    const fmt = (x, digits) => x.toFixed(digits).replace('.', ',');
+    if (n >= 1e9) return 'R$ ' + fmt(value / 1e9, 1) + 'B';
+    if (n >= 1e6) return 'R$ ' + fmt(value / 1e6, 1) + 'M';
+    if (n >= 1e3) return 'R$ ' + fmt(value / 1e3, 0) + 'k';
+    return 'R$ ' + Math.round(value).toLocaleString('pt-BR');
   }
   
   /**
@@ -702,43 +973,6 @@ class Dashboard {
     }, 4000);
   }
   
-  /**
-   * Initialize search functionality
-   */
-  initSearch() {
-    const searchInput = document.getElementById('table-search');
-    if (!searchInput) return;
-    
-    searchInput.addEventListener('input', (e) => {
-      const query = e.target.value.toLowerCase();
-      this.filterTable(query);
-    });
-  }
-  
-  filterTable(query) {
-    // Search only matches root-level names. Sub-nodes (children) inside each
-    // matched root are preserved untouched so the expanded hierarchy still
-    // works on filtered results.
-    const filtered = this.tableData.filter(row =>
-      row.name.toLowerCase().includes(query)
-    );
-
-    if (filtered.length === 0) {
-      const tbody = document.querySelector('.table tbody');
-      if (tbody) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="6" class="text-center" style="padding: var(--space-8);">
-              <p class="text-muted">Nenhum resultado encontrado</p>
-            </td>
-          </tr>
-        `;
-      }
-      return;
-    }
-
-    this.renderTable(filtered);
-  }
 }
 
 // Pacing Module
@@ -868,82 +1102,125 @@ const PacingModule = {
       return;
     }
 
+    // Bucket groups by delivery rate so the ones that need attention float to
+    // the top. Thresholds line up with the gauge colour cut-offs.
+    const critical = [];
+    const atRisk   = [];
+    const onTrack  = [];
+    channels.forEach((ch) => {
+      const dr = ch._deliveryRate != null ? ch._deliveryRate : 0;
+      if (dr < 60)      critical.push(ch);
+      else if (dr < 90) atRisk.push(ch);
+      else              onTrack.push(ch);
+    });
+    // Worst first within critical/risk; best first within on-track.
+    critical.sort((a, b) => (a._deliveryRate || 0) - (b._deliveryRate || 0));
+    atRisk.sort((a, b)   => (a._deliveryRate || 0) - (b._deliveryRate || 0));
+    onTrack.sort((a, b)  => (b._deliveryRate || 0) - (a._deliveryRate || 0));
+
+    const lang = window.currentLang || 'pt';
+    const sections = [
+      { key: 'critical', items: critical, label: lang === 'en' ? 'Needs attention' : 'Em atenção', hint: '< 60%' },
+      { key: 'risk',     items: atRisk,   label: lang === 'en' ? 'At risk'         : 'Em risco',   hint: '60-90%' },
+      { key: 'ontrack',  items: onTrack,  label: lang === 'en' ? 'On track'        : 'No ritmo',   hint: '≥ 90%' }
+    ].filter(s => s.items.length > 0);
+
     const grid = document.createElement('div');
     grid.className = 'pacing-channel-grid';
 
-    channels.forEach((ch, idx) => {
-      const canvasId = `pacingGauge-ch-${idx}`;
-      const dr = ch._deliveryRate != null ? ch._deliveryRate : 0;
-      const drText = dr.toFixed(1).replace('.', ',') + '%';
-      const fmtNum = (n) => Math.round(n || 0).toLocaleString('pt-BR');
-
-      // Packages of this group by delivered impressions (desc) — each row
-      // shows the delivered value with a proportional bar against the group's
-      // goal so users can read how much of the goal each package has already
-      // covered. Capped at top 5 to keep the card compact. Packages with zero
-      // delivered impressions are hidden from the list (they come from the
-      // pacing/goals table without a matching actuals row, e.g. goals set but
-      // delivery hasn't started yet) — their goal is still counted in
-      // estimateTotal so the contracted total remains correct.
-      const sortedPkgs = [...(ch.packages || [])]
-        .filter(p => (p.impressions || 0) > 0)
-        .sort((a, b) => (b.impressions || 0) - (a.impressions || 0));
-      const topPkgs = sortedPkgs.slice(0, 5);
-      const goalBase = ch.estimateTotal || topPkgs.reduce((m, p) => Math.max(m, p.impressions || 0), 0);
-
-      const estItemsHtml = topPkgs.map(p => {
-        const pct = goalBase > 0 ? Math.min(100, ((p.impressions || 0) / goalBase) * 100) : 0;
-        return `
-          <div class="pc-estimate-item">
-            <span class="pc-estimate-item-fill" style="width:${pct}%;"></span>
-            <span class="pc-estimate-item-name">${p.name}</span>
-            <span class="pc-estimate-item-value">${fmtNum(p.impressions)}</span>
-          </div>`;
-      }).join('');
-
-      const card = document.createElement('div');
-      card.className = 'card pacing-channel-card';
-      card.innerHTML = `
-        <div class="pc-body">
-          <h3 class="pc-name">${ch.grupo}</h3>
-          <div class="pc-kpi">
-            <span class="pc-kpi-value">${ch.vtr}</span>
-            <span class="pc-kpi-label" data-pt="VTR" data-en="VTR">VTR</span>
-          </div>
-          <div class="pc-kpi">
-            <span class="pc-kpi-value">${ch.engagement}</span>
-            <span class="pc-kpi-label" data-pt="Engajamento" data-en="Engagement">Engajamento</span>
-          </div>
-          <div class="pc-gauge">
-            <span class="pc-gauge-label" data-pt="Delivery Rate" data-en="Delivery Rate">Delivery Rate</span>
-            <canvas id="${canvasId}" width="200" height="110" aria-label="Delivery rate gauge"></canvas>
-            <span class="pc-gauge-value">${drText}</span>
-          </div>
-          <div class="pc-estimate">
-            <div class="pc-estimate-header">
-              <span class="pc-estimate-label" data-pt="Estimate" data-en="Estimate">Estimate</span>
-              <div class="pc-estimate-total">${fmtNum(ch.estimateTotal)}</div>
-            </div>
-            <div class="pc-estimate-items">${estItemsHtml}</div>
-          </div>
-        </div>
-        <div class="pc-footer">
-          <div class="pc-insight-icon"><i data-lucide="sparkles"></i></div>
-          <div class="pc-insight-text">${ch.insight || ''}</div>
-        </div>
+    // Walk through sections, emitting the header + each card in the order
+    // they'll be rendered. The `renderIdx` is the canvas index used to mount
+    // the gauge once the DOM is in place.
+    const ordered = [];
+    sections.forEach(section => {
+      const header = document.createElement('div');
+      header.className = `pacing-section-header pacing-section-${section.key}`;
+      header.innerHTML = `
+        <span class="pacing-section-dot"></span>
+        <span class="pacing-section-label">${section.label}</span>
+        <span class="pacing-section-hint">${section.hint}</span>
+        <span class="pacing-section-count">${section.items.length}</span>
       `;
-      grid.appendChild(card);
+      grid.appendChild(header);
+      section.items.forEach(ch => {
+        const idx = ordered.length;
+        ordered.push(ch);
+        grid.appendChild(this._buildChannelCard(ch, idx));
+      });
     });
 
     container.innerHTML = '';
     container.appendChild(grid);
 
-    // Mount the gauges only after the canvases are in the DOM.
-    channels.forEach((ch, idx) => {
+    // Mount gauges once the canvases are in the DOM. Same index as the order
+    // used by _buildChannelCard / ordered above.
+    ordered.forEach((ch, idx) => {
       const dr = ch._deliveryRate != null ? ch._deliveryRate : 0;
       const chart = this.renderGaugeCanvas(`pacingGauge-ch-${idx}`, dr);
       if (chart) this._channelGauges.push(chart);
     });
+  },
+
+  /**
+   * Build the markup for one channel/group card. Extracted from the old
+   * monolithic forEach so the section-aware renderer can reuse the layout.
+   */
+  _buildChannelCard(ch, idx) {
+    const canvasId = `pacingGauge-ch-${idx}`;
+    const dr = ch._deliveryRate != null ? ch._deliveryRate : 0;
+    const drText = dr.toFixed(1).replace('.', ',') + '%';
+    const fmtNum = (n) => Math.round(n || 0).toLocaleString('pt-BR');
+
+    // Top-5 packages by delivered impressions; zero-delivery rows are hidden
+    // because they come from pacing-only entries (goal set but no actuals).
+    const sortedPkgs = [...(ch.packages || [])]
+      .filter(p => (p.impressions || 0) > 0)
+      .sort((a, b) => (b.impressions || 0) - (a.impressions || 0));
+    const topPkgs = sortedPkgs.slice(0, 5);
+    const goalBase = ch.estimateTotal || topPkgs.reduce((m, p) => Math.max(m, p.impressions || 0), 0);
+
+    const estItemsHtml = topPkgs.map(p => {
+      const pct = goalBase > 0 ? Math.min(100, ((p.impressions || 0) / goalBase) * 100) : 0;
+      return `
+        <div class="pc-estimate-item">
+          <span class="pc-estimate-item-fill" style="width:${pct}%;"></span>
+          <span class="pc-estimate-item-name">${p.name}</span>
+          <span class="pc-estimate-item-value">${fmtNum(p.impressions)}</span>
+        </div>`;
+    }).join('');
+
+    const card = document.createElement('div');
+    card.className = 'card pacing-channel-card';
+    card.innerHTML = `
+      <div class="pc-body">
+        <h3 class="pc-name">${ch.grupo}</h3>
+        <div class="pc-kpi">
+          <span class="pc-kpi-value">${ch.vtr}</span>
+          <span class="pc-kpi-label" data-pt="VTR" data-en="VTR">VTR</span>
+        </div>
+        <div class="pc-kpi">
+          <span class="pc-kpi-value">${ch.engagement}</span>
+          <span class="pc-kpi-label" data-pt="Engajamento" data-en="Engagement">Engajamento</span>
+        </div>
+        <div class="pc-gauge">
+          <span class="pc-gauge-label" data-pt="Delivery Rate" data-en="Delivery Rate">Delivery Rate</span>
+          <canvas id="${canvasId}" width="200" height="110" aria-label="Delivery rate gauge"></canvas>
+          <span class="pc-gauge-value">${drText}</span>
+        </div>
+        <div class="pc-estimate">
+          <div class="pc-estimate-header">
+            <span class="pc-estimate-label" data-pt="Estimate" data-en="Estimate">Estimate</span>
+            <div class="pc-estimate-total">${fmtNum(ch.estimateTotal)}</div>
+          </div>
+          <div class="pc-estimate-items">${estItemsHtml}</div>
+        </div>
+      </div>
+      <div class="pc-footer">
+        <div class="pc-insight-icon"><i data-lucide="sparkles"></i></div>
+        <div class="pc-insight-text">${ch.insight || ''}</div>
+      </div>
+    `;
+    return card;
   },
 
   /**
@@ -1178,6 +1455,11 @@ const PacingModule = {
     };
 
     if (window._pacingTrendChart) window._pacingTrendChart.destroy();
+    // Theme-aware text/grid/tooltip — falls back to light-mode values when
+    // the helper isn't available (it lives in charts.js).
+    const _tc = (typeof _themeColors === 'function')
+      ? _themeColors()
+      : { text: '#374151', grid: '#E5E7EB', tooltipBg: '#1A1D2E' };
     window._pacingTrendChart = new Chart(ctx, {
       type: 'line',
       data: {
@@ -1212,10 +1494,10 @@ const PacingModule = {
           legend: {
             display: true, position: 'top', align: 'end',
             labels: { usePointStyle: true, pointStyle: 'circle',
-              padding: 16, font: { size: 11 } }
+              padding: 16, font: { size: 11 }, color: _tc.text }
           },
           tooltip: {
-            backgroundColor: '#1A1D2E',
+            backgroundColor: _tc.tooltipBg,
             callbacks: {
               label: c => ` ${c.parsed.y.toLocaleString('pt-BR')} impressões`
             }
@@ -1223,9 +1505,9 @@ const PacingModule = {
         },
         scales: {
           x: { grid: { display: false },
-               ticks: { font: { size: 11 }, color: '#9CA3AF' } },
-          y: { border: { display: false }, grid: { color: '#F3F4F6' },
-               ticks: { font: { size: 11 }, color: '#9CA3AF',
+               ticks: { font: { size: 11 }, color: _tc.text } },
+          y: { border: { display: false }, grid: { color: _tc.grid },
+               ticks: { font: { size: 11 }, color: _tc.text,
                  callback: v => {
                    if (v >= 1_000_000) return (v / 1_000_000).toFixed(1) + 'M';
                    if (v >= 1_000) return (v / 1_000).toFixed(0) + 'k';

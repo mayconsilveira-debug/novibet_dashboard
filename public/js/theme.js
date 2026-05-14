@@ -22,32 +22,35 @@
     });
     if (window.lucide && lucide.createIcons) lucide.createIcons();
 
-    // Update Chart.js chart colors — dark values lifted so axis labels and
-    // grid lines stay readable against the blue-black surface.
-    const textColor  = isDark ? '#C5D4DB' : '#6B7280';
-    const gridColor  = isDark ? 'rgba(255,255,255,0.10)' : '#E5E7EB';
-    const tooltipBg  = isDark ? '#243848' : '#1A1D2E';
+    // Refresh every live Chart.js instance: legend / axis ticks / grid lines
+    // / tooltip — all driven by the same theme-aware palette as the initial
+    // render. Keeps every chart legible after a theme toggle without us
+    // having to enumerate them by id.
+    const text      = isDark ? '#E5EAF0' : '#374151';
+    const grid      = isDark ? 'rgba(255,255,255,0.10)' : '#E5E7EB';
+    const tooltipBg = isDark ? '#243848' : '#1A1D2E';
 
-    [window._pacingGaugeChart, window._pacingTrendChart].forEach(chart => {
-      if (!chart) return;
-      chart.destroy();
-    });
-
-    if (window.dashboardCharts && window.dashboardCharts.mainChart) {
-      window.dashboardCharts.mainChart.options.scales.x.ticks.color = textColor;
-      window.dashboardCharts.mainChart.options.scales.y.ticks.color = textColor;
-      window.dashboardCharts.mainChart.options.scales.y.grid.color  = gridColor;
-      window.dashboardCharts.mainChart.options.plugins.tooltip.backgroundColor = tooltipBg;
-      window.dashboardCharts.mainChart.update();
+    if (window.Chart && typeof Chart.instances === 'object') {
+      Object.values(Chart.instances).forEach(chart => {
+        if (!chart || !chart.options) return;
+        const opts = chart.options;
+        // Legend
+        const legLabels = opts.plugins && opts.plugins.legend && opts.plugins.legend.labels;
+        if (legLabels) legLabels.color = text;
+        // Tooltip
+        if (opts.plugins && opts.plugins.tooltip) {
+          opts.plugins.tooltip.backgroundColor = tooltipBg;
+        }
+        // Scales (x / y, may not exist for doughnut / radial charts)
+        ['x', 'y'].forEach(axis => {
+          const sc = opts.scales && opts.scales[axis];
+          if (!sc) return;
+          if (sc.ticks) sc.ticks.color = text;
+          if (sc.grid && sc.grid.color != null) sc.grid.color = grid;
+        });
+        chart.update('none');
+      });
     }
-
-    // The mini charts (invest / format / channel) and the Pacing trend chart
-    // use plugins that read the theme color on draw — force a repaint so the
-    // value labels pick up the new foreground color.
-    ['investChart', 'formatChart', 'channelChart', 'pacingTrendChart'].forEach(id => {
-      const c = Chart.getChart(id);
-      if (c) c.update();
-    });
 
     localStorage.setItem('novibet-theme', isDark ? 'dark' : 'light');
   }

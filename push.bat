@@ -1,5 +1,5 @@
 @echo off
-cd /d "C:\Users\User2\Desktop\vanilla-dashboard"
+cd /d "C:\Users\User2\Desktop\projeto_novibet"
 echo Adicionando arquivos...
 git add -A
 echo Fazendo commit...

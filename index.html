@@ -111,15 +111,6 @@
         </div>
       </nav>
 
-      <!-- Footer pinned to the bottom (margin-top:auto on .sidebar-footer).
-           Clears the auth flag and bounces to the login page. -->
-      <div class="sidebar-footer">
-        <button id="sidebar-logout" class="sidebar-logout" type="button" aria-label="Sair">
-          <i data-lucide="log-out" class="nav-icon"></i>
-          <span class="nav-text" data-pt="Sair" data-en="Log out">Sair</span>
-        </button>
-      </div>
-
     </aside>
     
     <!-- Main Content -->
@@ -127,25 +118,35 @@
       <!-- TopBar (Overview only) -->
       <header class="topbar" role="banner" id="topbar-overview">
         <div class="topbar-left">
-          <img src="Logo Novibet.png" alt="Novibet" class="logo-dark" style="height: 24px; width: auto;">
-          <img src="Logo Novibet branco.png" alt="Novibet" class="logo-light" style="height: 24px; width: auto;">
+          <img src="logo-novibet.png" alt="Novibet" class="logo-dark" style="height: 24px; width: auto;">
+          <img src="logo-novibet-branco.png" alt="Novibet" class="logo-light" style="height: 24px; width: auto;">
         </div>
         
         <div class="topbar-right">
-          <!-- Date Range Filter -->
+          <!-- Date Range Filter — bounds: 2025-01-01 .. latest Date in
+               gold_fct_novibet (max set dynamically once data loads). -->
           <div class="date-range" style="display: flex; align-items: center; gap: var(--space-2);">
             <span class="date-label" data-pt="De" data-en="From">De</span>
-            <input type="date" class="input date-input" aria-label="Start date">
+            <input type="date" class="input date-input" min="2025-01-01" aria-label="Start date">
             <span class="date-label" data-pt="Até" data-en="To">Até</span>
-            <input type="date" class="input date-input" aria-label="End date">
+            <input type="date" class="input date-input" min="2025-01-01" aria-label="End date">
           </div>
           
+          <!-- Quarter Filter (T1..T4) — applies on top of the active year;
+               when no year is active, applies across all years. -->
+          <div class="quarter-filter" style="display: flex; align-items: center; gap: var(--space-1); margin-left: var(--space-2);">
+            <button class="quarter-btn" data-quarter="1" aria-label="Trimestre 1">T1</button>
+            <button class="quarter-btn" data-quarter="2" aria-label="Trimestre 2">T2</button>
+            <button class="quarter-btn" data-quarter="3" aria-label="Trimestre 3">T3</button>
+            <button class="quarter-btn" data-quarter="4" aria-label="Trimestre 4">T4</button>
+          </div>
+
           <!-- Year Filter -->
           <div style="display: flex; align-items: center; gap: var(--space-1); margin-left: var(--space-2);">
             <button class="year-btn" data-year="2025">2025</button>
             <button class="year-btn" data-year="2026">2026</button>
           </div>
-          
+
         </div>
       </header>
       
@@ -198,6 +199,26 @@
             </div>
           </div>
         </div>
+
+        <!-- Efficiency KPIs — cost-per-X metrics. Not clickable (don't drive
+             the main chart); they're contextual indicators. -->
+        <div class="grid grid-cols-3 mb-4" style="margin-bottom: var(--space-6);">
+          <div class="stat-card stat-card-secondary" data-metric="cpm">
+            <div class="stat-label" data-pt="CPM" data-en="CPM">CPM</div>
+            <div class="stat-value">—</div>
+            <div class="stat-change" style="display:none;"></div>
+          </div>
+          <div class="stat-card stat-card-secondary" data-metric="cpc">
+            <div class="stat-label" data-pt="CPC" data-en="CPC">CPC</div>
+            <div class="stat-value">—</div>
+            <div class="stat-change" style="display:none;"></div>
+          </div>
+          <div class="stat-card stat-card-secondary" data-metric="cpv">
+            <div class="stat-label" data-pt="CPV" data-en="CPV">CPV</div>
+            <div class="stat-value">—</div>
+            <div class="stat-change" style="display:none;"></div>
+          </div>
+        </div>
         
         <!-- Chart Section -->
         <div class="chart-container" style="margin-bottom: var(--space-6);">
@@ -240,6 +261,25 @@
           </div>
         </div>
 
+        <!-- Heatmap Canal × Formato — colored grid where each cell shows the
+             selected metric (CTR / VTR / CPM) for that channel × format combo.
+             Helps spot the best / worst mixes at a glance. -->
+        <div style="margin-bottom: var(--space-6);">
+          <div class="card">
+            <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-3);">
+              <h3 class="card-title" data-pt="Heatmap Canal × Formato" data-en="Heatmap Channel × Format">Heatmap Canal × Formato</h3>
+              <div class="heatmap-metric-toggle" role="group" aria-label="Métrica do heatmap">
+                <button class="btn btn-sm btn-primary"   data-heatmap-metric="ctr" data-pt="CTR"  data-en="CTR">CTR</button>
+                <button class="btn btn-sm btn-secondary" data-heatmap-metric="vtr" data-pt="VTR"  data-en="VTR">VTR</button>
+                <button class="btn btn-sm btn-secondary" data-heatmap-metric="cpm" data-pt="CPM"  data-en="CPM">CPM</button>
+              </div>
+            </div>
+            <div class="card-body" style="padding:0;">
+              <div id="heatmap-container" class="heatmap-container" aria-live="polite"></div>
+            </div>
+          </div>
+        </div>
+
         <!-- Row 2: Investimento / Mês (full width) -->
         <div style="margin-bottom: var(--space-6);">
           <div class="card">
@@ -252,23 +292,10 @@
           </div>
 
         </div>
-        
+
         <!-- Table Section -->
         <div class="card">
           <div class="card-header" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-4);">
-            <div class="search-box" style="width: 240px;">
-              <i data-lucide="search" class="search-icon" style="width: 16px; height: 16px;"></i>
-              <input 
-                type="search" 
-                id="table-search"
-                class="input search-input" 
-                placeholder="Buscar..."
-                data-pt="Buscar..."
-                data-en="Search..."
-                style="width: 100%;"
-                aria-label="Search table"
-              >
-            </div>
             <div class="table-drill-group" role="group" aria-label="Agrupar por">
               <span class="table-drill-label" data-pt="Agrupar por" data-en="Group by">Agrupar por</span>
               <div class="table-drill-buttons">

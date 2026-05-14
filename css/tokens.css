@@ -13,11 +13,12 @@
   --color-surface: #FFFFFF;
   --color-surface-elevated: #FFFFFF;
   
-  /* Text Colors */
+  /* Text Colors — bumped tertiary/muted darker so eyebrow labels
+     (CRIADO POR, RELATÓRIOS, IMPRESSÕES, CPM, etc.) stay legible. */
   --color-text-primary: #1A1D2E;
-  --color-text-secondary: #6B7280;
-  --color-text-tertiary: #9CA3AF;
-  --color-text-muted: #9CA3AF;
+  --color-text-secondary: #4B5563;
+  --color-text-tertiary: #6B7280;
+  --color-text-muted: #6B7280;
   
   /* Accent Colors - Soft Violet */
   --color-accent: #7C6FF7;
